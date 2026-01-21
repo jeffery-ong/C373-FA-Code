@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blockchain Marketplace</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark px-4">
+  <span class="navbar-brand">Blockchain Marketplace</span>
+  <span class="text-white">Account: <%= account %></span>
+</nav>
+
+<div class="container mt-4">
+
+  <!-- CREATE ORDER -->
+  <div class="card mb-4">
+    <div class="card-header fw-bold">Create New Order (Payment Escrow)</div>
+    <div class="card-body">
+      <form action="/createOrder" method="POST">
+        <div class="mb-3">
+          <label class="form-label">Seller Address</label>
+          <input type="text" name="seller" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Amount (ETH)</label>
+          <input type="number" step="0.01" name="amount" class="form-control" required>
+        </div>
+        <button class="btn btn-primary">Create Order</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ORDER LIST -->
+  <div class="card">
+    <div class="card-header fw-bold">Orders (Shipping & Delivery Tracking)</div>
+    <div class="card-body">
+
+      <% if (orders.length === 0) { %>
+        <p>No orders created yet.</p>
+      <% } %>
+
+      <% orders.forEach(order => { %>
+        <div class="border rounded p-3 mb-3 bg-white">
+          <p><strong>Order ID:</strong> <%= order.id %></p>
+          <p><strong>Buyer:</strong> <%= order.buyer %></p>
+          <p><strong>Seller:</strong> <%= order.seller %></p>
+          <p><strong>Amount:</strong> <%= order.amount %> ETH</p>
+          <p><strong>Shipped:</strong> <%= order.shipped %></p>
+          <p><strong>Delivered:</strong> <%= order.delivered %></p>
+
+          <% if (!order.shipped) { %>
+            <form action="/ship/<%= order.id %>" method="POST">
+              <button class="btn btn-warning btn-sm">Mark as Shipped</button>
+            </form>
+          <% } %>
+
+          <% if (order.shipped && !order.delivered) { %>
+            <form action="/deliver/<%= order.id %>" method="POST">
+              <button class="btn btn-success btn-sm">Confirm Delivery</button>
+            </form>
+          <% } %>
+        </div>
+      <% }) %>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
