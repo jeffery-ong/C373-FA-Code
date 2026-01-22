@@ -328,6 +328,26 @@
         flex-wrap: wrap;
       }
 
+      .admin-panel {
+        border: 1px dashed rgba(61, 116, 255, 0.4);
+        background: rgba(61, 116, 255, 0.04);
+      }
+
+      .admin-panel .admin-gate {
+        display: grid;
+        gap: 12px;
+      }
+
+      .admin-panel .admin-actions {
+        display: none;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .admin-panel .admin-actions.show {
+        display: grid;
+      }
+
       @media (max-width: 900px) {
         .header-inner {
           flex-direction: column;
@@ -363,9 +383,9 @@
           </div>
 
           <nav class="nav-links">
-            <a class="active" href="/">Home</a>
-            <a href="/track">Track Parcel</a>
-            <a href="/aboutus">About Us</a>
+            <a class="active" href="#">Home</a>
+            <a href="#tracking">Track Parcel</a>
+            <a href="#delivery">Create Delivery</a>
           </nav>
 
           <div class="header-actions">
@@ -408,36 +428,89 @@
             </p>
 
             <div class="hero-actions">
-              <a class="btn btn-primary" href="/track">Track Parcel</a>
-              <a class="btn btn-ghost" href="#">Create Delivery</a>
+              <a class="btn btn-primary" href="#tracking">Track Parcel</a>
+              <a class="btn btn-ghost" href="#delivery">Create Delivery</a>
             </div>
           </div>
         </section>
 
-        <section class="section">
+        <section class="section" id="delivery">
           <div class="alert d-none" id="statusMessage"></div>
 
           <div class="cards">
             <div class="card">
-              <h3>Create New Order (Payment Escrow)</h3>
-              <form id="createOrderForm">
+              <h3>Create Delivery Request</h3>
+              <form id="deliveryForm">
                 <div class="form-row">
-                  <label>Seller Address</label>
-                  <input type="text" name="seller" required />
+                  <label>Pickup Location</label>
+                  <input type="text" name="pickupLocation" required />
                 </div>
                 <div class="form-row">
-                  <label>Amount (ETH)</label>
+                  <label>Drop Off Location</label>
+                  <input type="text" name="dropoffLocation" required />
+                </div>
+                <div class="form-row">
+                  <label>Your Name</label>
+                  <input type="text" name="senderName" required />
+                </div>
+                <div class="form-row">
+                  <label>Contact Phone Number</label>
+                  <input type="text" name="senderPhone" required />
+                </div>
+                <div class="form-row">
+                  <label>Receiver Name</label>
+                  <input type="text" name="receiverName" required />
+                </div>
+                <div class="form-row">
+                  <label>Delivery Payment (ETH)</label>
                   <input type="number" step="0.01" min="0" name="amount" required />
                 </div>
                 <button class="btn btn-primary" type="submit">
-                  Create Order
+                  Submit Delivery Request
                 </button>
               </form>
             </div>
 
             <div class="card">
-              <h3>Orders (Shipping & Delivery Tracking)</h3>
-              <div id="ordersList"></div>
+              <h3 id="tracking">Track Parcel</h3>
+              <form id="trackForm">
+                <div class="form-row">
+                  <label>Order ID</label>
+                  <input type="number" min="1" name="orderId" required />
+                </div>
+                <button class="btn btn-ghost" type="submit">
+                  Find Parcel
+                </button>
+              </form>
+              <div id="trackingResult"></div>
+            </div>
+            <div class="card admin-panel">
+              <h3>Admin: Update Delivery Status</h3>
+              <form id="adminLoginForm" class="admin-gate">
+                <div class="form-row">
+                  <label>Admin Password</label>
+                  <input type="password" name="adminPassword" required />
+                </div>
+                <button class="btn btn-primary" type="submit">
+                  Unlock Admin Actions
+                </button>
+              </form>
+              <div class="admin-actions" id="adminActions">
+                <form id="adminStatusForm">
+                  <div class="form-row">
+                    <label>Order ID</label>
+                    <input type="number" min="1" name="orderId" required />
+                  </div>
+                  <div class="order-actions">
+                    <button class="btn btn-warning btn-sm" type="button" data-admin="collect">
+                      Mark Collected
+                    </button>
+                    <button class="btn btn-success btn-sm" type="button" data-admin="deliver">
+                      Mark Delivered
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </section>

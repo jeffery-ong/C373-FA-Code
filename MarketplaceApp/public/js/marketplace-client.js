@@ -1,8 +1,14 @@
 const accountEl = document.getElementById("accountAddress");
 const connectBtn = document.getElementById("connectButton");
 const statusEl = document.getElementById("statusMessage");
-const ordersListEl = document.getElementById("ordersList");
-const createOrderForm = document.getElementById("createOrderForm");
+const deliveryForm = document.getElementById("deliveryForm");
+const trackForm = document.getElementById("trackForm");
+const trackingResultEl = document.getElementById("trackingResult");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const adminActionsEl = document.getElementById("adminActions");
+const adminStatusForm = document.getElementById("adminStatusForm");
+
+const ADMIN_PASSWORD = "12345678";
 
 const state = {
   web3: null,
@@ -80,80 +86,32 @@ async function loadWeb3({ requestAccounts = true } = {}) {
   return Boolean(state.account);
 }
 
-async function loadBlockchainData() {
-  if (!state.account) {
-    return;
+function getStatusLabel(statusValue) {
+  const statusIndex = Number(statusValue);
+  if (statusIndex === 0) {
+    return "Not collected";
   }
-
-  await loadContracts();
-  await loadOrders();
-  clearStatus();
+  if (statusIndex === 1) {
+    return "Collected / On delivery";
+  }
+  if (statusIndex === 2) {
+    return "Delivered / Collected";
+  }
+  return "Unknown";
 }
 
-async function connectWallet() {
-  const hasAccount = await loadWeb3({ requestAccounts: true });
-  if (hasAccount) {
-    await loadBlockchainData();
-  }
-}
-
-async function loadOrders() {
-  if (!state.escrowContract) {
-    return;
-  }
-
-  const orderCount = await state.escrowContract.methods.orderCount().call();
-  const orders = [];
-
-  for (let i = 1; i <= Number(orderCount); i += 1) {
-    const o = await state.escrowContract.methods.getOrder(i).call();
-    orders.push({
-      id: o[0],
-      buyer: o[1],
-      seller: o[2],
-      amount: state.web3.utils.fromWei(o[3], "ether"),
-      shipped: o[4],
-      delivered: o[5],
-    });
-  }
-
-  renderOrders(orders);
-}
-
-function renderOrders(orders) {
-  if (orders.length === 0) {
-    ordersListEl.innerHTML = "<p>No orders created yet.</p>";
-    return;
-  }
-
-  const html = orders
-    .map((order) => {
-      const shipBtn = !order.shipped
-        ? `<button class="btn btn-warning btn-sm" data-action="ship" data-id="${order.id}">Mark as Shipped</button>`
-        : "";
-      const deliverBtn =
-        order.shipped && !order.delivered
-          ? `<button class="btn btn-success btn-sm" data-action="deliver" data-id="${order.id}">Confirm Delivery</button>`
-          : "";
-
-      return `
-        <div class="order-card">
-          <p><strong>Order ID:</strong> ${order.id}</p>
-          <p><strong>Buyer:</strong> ${order.buyer}</p>
-          <p><strong>Seller:</strong> ${order.seller}</p>
-          <p><strong>Amount:</strong> ${order.amount} ETH</p>
-          <p><strong>Shipped:</strong> ${order.shipped}</p>
-          <p><strong>Delivered:</strong> ${order.delivered}</p>
-          <div class="order-actions">
-            ${shipBtn}
-            ${deliverBtn}
-          </div>
-        </div>
-      `;
-    })
-    .join("");
-
-  ordersListEl.innerHTML = html;
+function renderTrackingResult(shipment) {
+  trackingResultEl.innerHTML = `
+    <div class="order-card">
+      <p><strong>Order ID:</strong> ${shipment.orderId}</p>
+      <p><strong>Sender:</strong> ${shipment.senderName}</p>
+      <p><strong>Sender Phone:</strong> ${shipment.senderPhone}</p>
+      <p><strong>Receiver:</strong> ${shipment.receiverName}</p>
+      <p><strong>Pickup:</strong> ${shipment.pickupLocation}</p>
+      <p><strong>Drop Off:</strong> ${shipment.dropoffLocation}</p>
+      <p><strong>Status:</strong> ${shipment.status}</p>
+    </div>
+  `;
 }
 
 function extractRpcMessage(error) {
@@ -175,83 +133,75 @@ function extractRpcMessage(error) {
   return error.message || "Transaction failed.";
 }
 
-async function getOrder(orderId) {
-  const o = await state.escrowContract.methods.getOrder(orderId).call();
-  return {
-    id: o[0],
-    buyer: o[1],
-    seller: o[2],
-    amount: state.web3.utils.fromWei(o[3], "ether"),
-    shipped: o[4],
-    delivered: o[5],
-  };
+async function connectWallet() {
+  const hasAccount = await loadWeb3({ requestAccounts: true });
+  if (hasAccount) {
+    await loadContracts();
+  }
 }
 
-async function createOrder(event) {
+async function submitDeliveryRequest(event) {
   event.preventDefault();
   if (!state.escrowContract || !state.account) {
     setStatus("Connect your wallet first.", "warning");
     return;
   }
 
-  const formData = new FormData(createOrderForm);
-  const seller = formData.get("seller");
+  const formData = new FormData(deliveryForm);
+  const pickupLocation = formData.get("pickupLocation");
+  const dropoffLocation = formData.get("dropoffLocation");
+  const senderName = formData.get("senderName");
+  const senderPhone = formData.get("senderPhone");
+  const receiverName = formData.get("receiverName");
   const amount = formData.get("amount");
 
-  setStatus("Creating order...", "info");
-  await state.escrowContract.methods.createOrder(seller).send({
-    from: state.account,
-    value: state.web3.utils.toWei(amount, "ether"),
-    gas: 300000,
-  });
+  setStatus("Submitting delivery request...", "info");
+  const receipt = await state.escrowContract.methods
+    .createDeliveryOrder(
+      pickupLocation,
+      dropoffLocation,
+      senderName,
+      senderPhone,
+      receiverName
+    )
+    .send({
+      from: state.account,
+      value: state.web3.utils.toWei(amount, "ether"),
+      gas: 350000,
+    });
 
-  createOrderForm.reset();
-  await loadOrders();
-  clearStatus();
+  const orderId =
+    receipt?.events?.OrderCreated?.returnValues?.orderId ||
+    (await state.escrowContract.methods.orderCount().call());
+
+  deliveryForm.reset();
+  setStatus(`Delivery request submitted. Order ID: ${orderId}`, "success");
 }
 
-async function handleOrderAction(event) {
-  const button = event.target.closest("button[data-action]");
-  if (!button || !state.shippingContract || !state.escrowContract || !state.account) {
+async function trackParcel(event) {
+  event.preventDefault();
+  if (!state.shippingContract) {
+    setStatus("Connect to the blockchain first.", "warning");
     return;
   }
 
-  const action = button.dataset.action;
-  const orderId = button.dataset.id;
+  const formData = new FormData(trackForm);
+  const orderId = formData.get("orderId");
 
-  const order = await getOrder(orderId);
-  if (action === "ship" && state.account.toLowerCase() !== order.seller.toLowerCase()) {
-    setStatus("Only the seller can mark an order as shipped.", "warning");
-    return;
-  }
+  setStatus("Fetching delivery details...", "info");
+  const shipment = await state.shippingContract.methods.getShipment(orderId).call();
 
-  if (action === "deliver" && state.account.toLowerCase() !== order.buyer.toLowerCase()) {
-    setStatus("Only the buyer can confirm delivery.", "warning");
-    return;
-  }
+  renderTrackingResult({
+    orderId: shipment[0],
+    sender: shipment[1],
+    pickupLocation: shipment[2],
+    dropoffLocation: shipment[3],
+    senderName: shipment[4],
+    senderPhone: shipment[5],
+    receiverName: shipment[6],
+    status: getStatusLabel(shipment[7]),
+  });
 
-  if (action === "deliver" && !order.shipped) {
-    setStatus("Order must be shipped before delivery can be confirmed.", "warning");
-    return;
-  }
-
-  setStatus("Submitting transaction...", "info");
-
-  if (action === "ship") {
-    await state.shippingContract.methods.markShipped(orderId).send({
-      from: state.account,
-      gas: 300000,
-    });
-  }
-
-  if (action === "deliver") {
-    await state.shippingContract.methods.confirmDelivery(orderId).send({
-      from: state.account,
-      gas: 300000,
-    });
-  }
-
-  await loadOrders();
   clearStatus();
 }
 
@@ -267,23 +217,74 @@ async function init() {
     });
   });
 
-  createOrderForm.addEventListener("submit", (event) => {
-    createOrder(event).catch((error) => {
+  deliveryForm.addEventListener("submit", (event) => {
+    submitDeliveryRequest(event).catch((error) => {
       setStatus(extractRpcMessage(error), "danger");
     });
   });
 
-  ordersListEl.addEventListener("click", (event) => {
-    handleOrderAction(event).catch((error) => {
+  trackForm.addEventListener("submit", (event) => {
+    trackParcel(event).catch((error) => {
       setStatus(extractRpcMessage(error), "danger");
     });
+  });
+
+  adminLoginForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const formData = new FormData(adminLoginForm);
+    const password = formData.get("adminPassword");
+    if (password !== ADMIN_PASSWORD) {
+      setStatus("Invalid admin password.", "danger");
+      return;
+    }
+
+    adminActionsEl.classList.add("show");
+    adminLoginForm.reset();
+    setStatus("Admin actions unlocked.", "success");
+  });
+
+  adminStatusForm.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-admin]");
+    if (!button) {
+      return;
+    }
+
+    const action = button.dataset.admin;
+    const formData = new FormData(adminStatusForm);
+    const orderId = formData.get("orderId");
+
+    if (!orderId) {
+      setStatus("Enter an order ID first.", "warning");
+      return;
+    }
+
+    if (!state.shippingContract || !state.account) {
+      setStatus("Connect your wallet first.", "warning");
+      return;
+    }
+
+    if (action === "collect") {
+      setStatus("Updating status to collected...", "info");
+      state.shippingContract.methods
+        .markCollected(orderId)
+        .send({ from: state.account, gas: 200000 })
+        .then(() => setStatus("Marked as collected.", "success"))
+        .catch((error) => setStatus(extractRpcMessage(error), "danger"));
+    }
+
+    if (action === "deliver") {
+      setStatus("Updating status to delivered...", "info");
+      state.shippingContract.methods
+        .markDelivered(orderId)
+        .send({ from: state.account, gas: 200000 })
+        .then(() => setStatus("Marked as delivered.", "success"))
+        .catch((error) => setStatus(extractRpcMessage(error), "danger"));
+    }
   });
 
   try {
-    const hasAccount = await loadWeb3({ requestAccounts: false });
-    if (hasAccount) {
-      await loadBlockchainData();
-    }
+    await loadWeb3({ requestAccounts: false });
+    await loadContracts();
   } catch (error) {
     setStatus(error.message, "danger");
   }
