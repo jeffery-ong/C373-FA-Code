@@ -9639,9 +9639,87 @@
     "name": "solc",
     "version": "0.8.19+commit.7dd6d404.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "5777": {
+      "events": {
+        "0xf9e17940e547201709f9aaacdec8ab3566601c60d8f5affb54f74b79b0b50b13": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "orderId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "buyer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "seller",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "OrderCreated",
+          "type": "event"
+        },
+        "0xe21fe02c1589242b30be2057f54fd54b7ddc463695d19ffdb54f9ebb0584f24a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "orderId",
+              "type": "uint256"
+            }
+          ],
+          "name": "OrderDelivered",
+          "type": "event"
+        },
+        "0xe3ce5f36666aec295b2ed1a858caf4782066e5e8c1a5a5da7ba6551b14fcfdcb": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "orderId",
+              "type": "uint256"
+            }
+          ],
+          "name": "OrderShipped",
+          "type": "event"
+        },
+        "0x705107bc72f9e90318648173ed609c51575a7b5583f7f39f882d8e746bd4de2a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "shippingContract",
+              "type": "address"
+            }
+          ],
+          "name": "ShippingContractUpdated",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x35354aeFDB163E2207621eeB4384CDcEA261bAf9",
+      "transactionHash": "0xecebd6afbf6ff69b76cf78ace0cefbf8d864bc2c60153431909db4a994dc8f98"
+    }
+  },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-01-22T06:27:47.954Z",
+  "updatedAt": "2026-01-22T06:47:40.600Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

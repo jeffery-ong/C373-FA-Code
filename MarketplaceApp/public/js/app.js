@@ -137,14 +137,14 @@ function renderOrders(orders) {
           : "";
 
       return `
-        <div class="border rounded p-3 mb-3 bg-white">
+        <div class="order-card">
           <p><strong>Order ID:</strong> ${order.id}</p>
           <p><strong>Buyer:</strong> ${order.buyer}</p>
           <p><strong>Seller:</strong> ${order.seller}</p>
           <p><strong>Amount:</strong> ${order.amount} ETH</p>
           <p><strong>Shipped:</strong> ${order.shipped}</p>
           <p><strong>Delivered:</strong> ${order.delivered}</p>
-          <div class="d-flex gap-2">
+          <div class="order-actions">
             ${shipBtn}
             ${deliverBtn}
           </div>
