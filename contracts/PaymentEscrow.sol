@@ -1,16 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+interface IShippingTracking {
+    function createShipment(
+        uint orderId,
+        address sender,
+        string calldata pickupLocation,
+        string calldata dropoffLocation,
+        string calldata senderName,
+        string calldata senderPhone,
+        string calldata receiverName
+    ) external;
+}
+
 contract PaymentEscrow {
     uint public orderCount = 0;
 
     struct Order {
         uint orderId;
         address buyer;
-        address seller;
-        uint amount;        // Escrowed payment
-        bool shipped;       // Topic 2
-        bool delivered;     // Topic 2
+        uint amount;
+        bool paid;
     }
 
     mapping(uint => Order) public orders;
@@ -19,9 +29,7 @@ contract PaymentEscrow {
     address public shippingContract;
 
     // ---------------- EVENTS ----------------
-    event OrderCreated(uint orderId, address buyer, address seller, uint amount);
-    event OrderShipped(uint orderId);
-    event OrderDelivered(uint orderId);
+    event OrderCreated(uint orderId, address buyer, uint amount);
     event ShippingContractUpdated(address shippingContract);
 
     constructor() {
@@ -33,77 +41,55 @@ contract PaymentEscrow {
         _;
     }
 
-    modifier onlyShipping() {
-        require(msg.sender == shippingContract, "Only shipping contract");
-        _;
-    }
-
     function setShippingContract(address _shippingContract) external onlyOwner {
         require(_shippingContract != address(0), "Invalid shipping contract");
         shippingContract = _shippingContract;
         emit ShippingContractUpdated(_shippingContract);
     }
 
-    // ---------------- TOPIC 1: PAYMENT AUTOMATION ----------------
-    function createOrder(address _seller) public payable {
+    // ---------------- DELIVERY REQUEST ----------------
+    function createDeliveryOrder(
+        string calldata pickupLocation,
+        string calldata dropoffLocation,
+        string calldata senderName,
+        string calldata senderPhone,
+        string calldata receiverName
+    ) external payable {
         require(msg.value > 0, "Payment required");
+        require(shippingContract != address(0), "Shipping contract not set");
 
         orderCount++;
 
         orders[orderCount] = Order(
             orderCount,
             msg.sender,
-            _seller,
             msg.value,
-            false,
-            false
+            true
         );
 
-        emit OrderCreated(orderCount, msg.sender, _seller, msg.value);
-    }
+        IShippingTracking(shippingContract).createShipment(
+            orderCount,
+            msg.sender,
+            pickupLocation,
+            dropoffLocation,
+            senderName,
+            senderPhone,
+            receiverName
+        );
 
-    // ---------------- TOPIC 2: SHIPPING TRACKING ----------------
-    function markShippedFromShipping(uint _orderId, address caller)
-        external
-        onlyShipping
-    {
-        Order storage order = orders[_orderId];
+        payable(owner).transfer(msg.value);
 
-        require(caller == order.seller, "Only seller can mark shipped");
-        require(!order.shipped, "Already shipped");
-
-        order.shipped = true;
-        emit OrderShipped(_orderId);
-    }
-
-    function confirmDeliveryFromShipping(uint _orderId, address caller)
-        external
-        onlyShipping
-    {
-        Order storage order = orders[_orderId];
-
-        require(caller == order.buyer, "Only buyer can confirm delivery");
-        require(order.shipped, "Order not shipped");
-        require(!order.delivered, "Already delivered");
-
-        order.delivered = true;
-
-        // Auto-release escrow payment
-        payable(order.seller).transfer(order.amount);
-
-        emit OrderDelivered(_orderId);
+        emit OrderCreated(orderCount, msg.sender, msg.value);
     }
 
     // ---------------- GETTER ----------------
     function getOrder(uint _orderId)
-        public
+        external
         view
         returns (
             uint,
             address,
-            address,
             uint,
-            bool,
             bool
         )
     {
@@ -111,10 +97,8 @@ contract PaymentEscrow {
         return (
             o.orderId,
             o.buyer,
-            o.seller,
             o.amount,
-            o.shipped,
-            o.delivered
+            o.paid
         );
     }
 }

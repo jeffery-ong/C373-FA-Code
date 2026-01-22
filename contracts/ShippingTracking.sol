@@ -1,24 +1,116 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IPaymentEscrow {
-    function markShippedFromShipping(uint _orderId, address caller) external;
-    function confirmDeliveryFromShipping(uint _orderId, address caller) external;
-}
-
 contract ShippingTracking {
-    IPaymentEscrow public escrow;
+    enum DeliveryStatus {
+        NotCollected,
+        InTransit,
+        Delivered
+    }
+
+    struct Shipment {
+        uint orderId;
+        address sender;
+        string pickupLocation;
+        string dropoffLocation;
+        string senderName;
+        string senderPhone;
+        string receiverName;
+        DeliveryStatus status;
+    }
+
+    mapping(uint => Shipment) public shipments;
+
+    address public owner;
+    address public escrow;
+
+    event ShipmentCreated(uint orderId, address sender);
+    event StatusUpdated(uint orderId, DeliveryStatus status);
 
     constructor(address escrowAddress) {
         require(escrowAddress != address(0), "Invalid escrow address");
-        escrow = IPaymentEscrow(escrowAddress);
+        owner = msg.sender;
+        escrow = escrowAddress;
     }
 
-    function markShipped(uint _orderId) public {
-        escrow.markShippedFromShipping(_orderId, msg.sender);
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner");
+        _;
     }
 
-    function confirmDelivery(uint _orderId) public {
-        escrow.confirmDeliveryFromShipping(_orderId, msg.sender);
+    modifier onlyEscrow() {
+        require(msg.sender == escrow, "Only escrow contract");
+        _;
+    }
+
+    function createShipment(
+        uint orderId,
+        address sender,
+        string calldata pickupLocation,
+        string calldata dropoffLocation,
+        string calldata senderName,
+        string calldata senderPhone,
+        string calldata receiverName
+    ) external onlyEscrow {
+        require(shipments[orderId].orderId == 0, "Shipment exists");
+
+        shipments[orderId] = Shipment(
+            orderId,
+            sender,
+            pickupLocation,
+            dropoffLocation,
+            senderName,
+            senderPhone,
+            receiverName,
+            DeliveryStatus.NotCollected
+        );
+
+        emit ShipmentCreated(orderId, sender);
+    }
+
+    function markCollected(uint orderId) external onlyOwner {
+        Shipment storage shipment = shipments[orderId];
+        require(shipment.orderId != 0, "Shipment not found");
+        require(shipment.status == DeliveryStatus.NotCollected, "Invalid status");
+
+        shipment.status = DeliveryStatus.InTransit;
+        emit StatusUpdated(orderId, shipment.status);
+    }
+
+    function markDelivered(uint orderId) external onlyOwner {
+        Shipment storage shipment = shipments[orderId];
+        require(shipment.orderId != 0, "Shipment not found");
+        require(shipment.status != DeliveryStatus.Delivered, "Already delivered");
+
+        shipment.status = DeliveryStatus.Delivered;
+        emit StatusUpdated(orderId, shipment.status);
+    }
+
+    function getShipment(uint orderId)
+        external
+        view
+        returns (
+            uint,
+            address,
+            string memory,
+            string memory,
+            string memory,
+            string memory,
+            string memory,
+            DeliveryStatus
+        )
+    {
+        Shipment memory shipment = shipments[orderId];
+        require(shipment.orderId != 0, "Shipment not found");
+        return (
+            shipment.orderId,
+            shipment.sender,
+            shipment.pickupLocation,
+            shipment.dropoffLocation,
+            shipment.senderName,
+            shipment.senderPhone,
+            shipment.receiverName,
+            shipment.status
+        );
     }
 }
