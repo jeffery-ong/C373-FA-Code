@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ZacDelivery | Create Delivery</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f7ff;
+        --bg-soft: #eef3ff;
+        --surface: #ffffff;
+        --text: #0f1a2b;
+        --text-muted: #5a6a85;
+        --primary: #2f6bff;
+        --primary-dark: #2456d6;
+        --accent: #2bb673;
+        --border: #dde5f4;
+        --shadow: 0 18px 40px rgba(15, 26, 43, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Manrope", system-ui, -apple-system, sans-serif;
+        background: radial-gradient(circle at top, #ffffff 0%, var(--bg) 60%);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 520px;
+        height: 520px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.18), transparent 70%);
+        z-index: -1;
+        filter: blur(10px);
+      }
+
+      body::before {
+        top: -200px;
+        left: -160px;
+      }
+
+      body::after {
+        bottom: -220px;
+        right: -170px;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: -0.02em;
+      }
+
+      .logo-badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 16px;
+        background: linear-gradient(140deg, #2f6bff, #78a8ff);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 10px 20px rgba(47, 107, 255, 0.3);
+      }
+
+      .logo-badge svg {
+        width: 22px;
+        height: 22px;
+        fill: white;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 24px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .nav-links a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .nav-links a.active {
+        color: var(--primary);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: white;
+        min-width: 260px;
+      }
+
+      .search-bar input {
+        border: none;
+        outline: none;
+        font-size: 14px;
+        width: 100%;
+        font-family: inherit;
+      }
+
+      .user-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        color: var(--text-muted);
+        background: white;
+      }
+
+      .page-shell {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px 24px 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .service-hero {
+        background: radial-gradient(circle at top left, #e9f1ff, #f7f9ff);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 32px;
+        display: grid;
+        grid-template-columns: 1.2fr auto;
+        gap: 24px;
+        align-items: center;
+      }
+
+      .service-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .service-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: var(--primary);
+        display: grid;
+        place-items: center;
+      }
+
+      .service-icon svg {
+        width: 28px;
+        height: 28px;
+        stroke: white;
+        fill: none;
+        stroke-width: 2;
+      }
+
+      .service-title h1 {
+        margin: 0 0 8px;
+        font-size: clamp(26px, 4vw, 38px);
+        font-family: "Space Grotesk", system-ui, sans-serif;
+      }
+
+      .service-title p {
+        margin: 0;
+        color: var(--text-muted);
+        max-width: 520px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(47, 107, 255, 0.12);
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 12px;
+        margin-left: 10px;
+      }
+
+      .hero-actions {
+        display: grid;
+        gap: 12px;
+        justify-items: end;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 14px;
+        padding: 12px 20px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 12px 24px rgba(47, 107, 255, 0.25);
+      }
+
+      .btn-ghost {
+        background: white;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+      }
+
+      .panel {
+        background: var(--surface);
+        border-radius: 22px;
+        border: 1px solid var(--border);
+        padding: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel h3 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--text-muted);
+      }
+
+      .pricing-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .pricing-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: var(--bg-soft);
+        display: grid;
+        place-items: center;
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      .two-column {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+      }
+
+      .feature-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px 20px;
+        margin-top: 18px;
+      }
+
+      .feature {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .feature-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(47, 107, 255, 0.12);
+        display: grid;
+        place-items: center;
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      .benefits {
+        background: var(--bg-soft);
+        border-radius: 22px;
+        border: 1px solid var(--border);
+        padding: 24px;
+      }
+
+      .benefits h3 {
+        margin: 0 0 8px;
+        color: var(--primary);
+      }
+
+      .benefits-grid {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      .benefit-card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        border: 1px solid var(--border);
+      }
+
+      .delivery-form {
+        margin-top: 24px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        font-family: inherit;
+        font-size: 14px;
+      }
+
+      .form-actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .alert {
+        padding: 14px 18px;
+        border-radius: 14px;
+        border: 1px solid transparent;
+        background: rgba(47, 107, 255, 0.08);
+        color: #234fbd;
+        margin-top: 18px;
+      }
+
+      .alert.d-none {
+        display: none;
+      }
+
+      .wallet-bar {
+        margin-top: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 18px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: white;
+      }
+
+      .wallet-label {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-right: 8px;
+      }
+
+      .wallet-bar strong {
+        font-weight: 600;
+      }
+
+      footer {
+        background: white;
+        border-top: 1px solid var(--border);
+      }
+
+      .footer-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 50px 24px 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 24px;
+      }
+
+      .footer-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      .footer-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .footer-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        color: var(--text-muted);
+        display: grid;
+        gap: 8px;
+        font-size: 14px;
+      }
+
+      .footer-list a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .footer-bottom {
+        text-align: center;
+        padding: 18px 24px 30px;
+        color: var(--text-muted);
+        font-size: 13px;
+        border-top: 1px solid var(--border);
+      }
+
+      @media (max-width: 900px) {
+        .header-inner {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .header-actions {
+          width: 100%;
+          flex-wrap: wrap;
+          justify-content: space-between;
+        }
+
+        .search-bar {
+          flex: 1 1 100%;
+        }
+
+        .service-hero {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-actions {
+          justify-items: start;
+        }
+
+        .grid,
+        .two-column {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <%- include("partials/header", { activePage: "create" }) %>
+
+      <main class="page-shell">
+        <a class="back-link" href="/">
+          <span aria-hidden="true">←</span>
+          Back to Services
+        </a>
+
+        <section class="service-hero">
+          <div class="service-title">
+            <div class="service-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M13 3L4 14h7l-1 7 10-12h-7l1-6z" />
+              </svg>
+            </div>
+            <div>
+              <h1>
+                Express Delivery
+                <span class="chip">Popular</span>
+              </h1>
+              <p>
+                Same-day delivery with real-time blockchain tracking. Perfect for urgent packages.
+              </p>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" type="button">Create Delivery</button>
+            <a class="btn btn-ghost" href="/track">Track Existing Parcel</a>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="panel">
+            <h3>About This Service</h3>
+            <p>
+              Our Express Delivery service guarantees same-day delivery for time-sensitive
+              packages. With real-time blockchain tracking, you can monitor your parcel every
+              step of the way. Smart contracts ensure automatic payment release upon successful
+              delivery.
+            </p>
+          </div>
+          <div class="panel">
+            <h3>Pricing & Timing</h3>
+            <div class="pricing-item">
+              <div class="pricing-icon">$</div>
+              <div>
+                <strong>Price Range</strong>
+                <div>$15-$35</div>
+              </div>
+            </div>
+            <div class="pricing-item">
+              <div class="pricing-icon">T</div>
+              <div>
+                <strong>Estimated Time</strong>
+                <div>Same Day</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <div class="panel">
+            <h3>Features Included</h3>
+            <p>Everything you get with Express Delivery</p>
+            <div class="feature-list">
+              <div class="feature">
+                <div class="feature-dot">✓</div>
+                <span>Same-day delivery guarantee</span>
+              </div>
+              <div class="feature">
+                <div class="feature-dot">✓</div>
+                <span>Real-time GPS tracking</span>
+              </div>
+              <div class="feature">
+                <div class="feature-dot">✓</div>
+                <span>Blockchain-verified delivery confirmation</span>
+              </div>
+              <div class="feature">
+                <div class="feature-dot">✓</div>
+                <span>Smart contract escrow protection</span>
+              </div>
+              <div class="feature">
+                <div class="feature-dot">✓</div>
+                <span>Priority handling</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Need Help?</h3>
+            <p>Our team is here to assist you with any questions about this service.</p>
+            <div class="form-actions">
+              <button class="btn btn-ghost" type="button">Contact Support</button>
+              <a class="btn btn-ghost" href="/aboutus">Learn About ZacDelivery</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="benefits">
+          <h3>Blockchain Benefits</h3>
+          <p>How blockchain technology protects your delivery</p>
+          <div class="benefits-grid">
+            <div class="benefit-card">
+              <strong>Smart Contract Escrow</strong>
+              <p>Your payment is held securely and only released when delivery is confirmed.</p>
+            </div>
+            <div class="benefit-card">
+              <strong>Immutable Tracking</strong>
+              <p>Every checkpoint is recorded on the blockchain and cannot be altered.</p>
+            </div>
+            <div class="benefit-card">
+              <strong>Verified Delivery</strong>
+              <p>Blockchain-verified proof of delivery protects both sender and receiver.</p>
+            </div>
+            <div class="benefit-card">
+              <strong>Dispute Resolution</strong>
+              <p>Transparent records make resolving any issues quick and fair.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel delivery-form">
+          <h3>Create Delivery Request</h3>
+          <div class="wallet-bar">
+            <div>
+              <span class="wallet-label">Account:</span>
+              <strong id="accountAddress">Not connected</strong>
+            </div>
+            <button class="btn btn-primary" id="connectButton">Connect Wallet</button>
+          </div>
+          <form id="deliveryForm">
+            <div class="form-grid">
+              <div>
+                <label>Pickup Location</label>
+                <input type="text" name="pickupLocation" required />
+              </div>
+              <div>
+                <label>Drop Off Location</label>
+                <input type="text" name="dropoffLocation" required />
+              </div>
+              <div>
+                <label>Your Name</label>
+                <input type="text" name="senderName" required />
+              </div>
+              <div>
+                <label>Contact Phone Number</label>
+                <input type="text" name="senderPhone" required />
+              </div>
+              <div>
+                <label>Receiver Name</label>
+                <input type="text" name="receiverName" required />
+              </div>
+              <div>
+                <label>Delivery Payment (ETH)</label>
+                <input type="number" step="0.01" min="0" name="amount" required />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Submit Delivery Request</button>
+              <a class="btn btn-ghost" href="/track">Track Existing Parcel</a>
+            </div>
+          </form>
+          <div class="alert d-none" id="statusMessage"></div>
+        </section>
+      </main>
+
+      <%- include("partials/footer") %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+    <script src="/js/marketplace-client.js"></script>
+  </body>
+</html>

@@ -101,6 +101,65 @@ function getStatusLabel(statusValue) {
 }
 
 function renderTrackingResult(shipment) {
+  if (!trackingResultEl) {
+    return;
+  }
+  const badgeSource =
+    shipment.senderName || shipment.receiverName || shipment.pickupLocation || "O";
+  const badgeLetter = String(badgeSource).trim().charAt(0).toUpperCase() || "O";
+  const statusLabel = shipment.status || "Unknown";
+  const routeSummary = `${shipment.pickupLocation} -> ${shipment.dropoffLocation}`;
+
+  const detailTitle = document.getElementById("detailTitle");
+  const detailOrderId = document.getElementById("detailOrderId");
+  const detailStatus = document.getElementById("detailStatus");
+  const detailIcon = document.getElementById("detailIcon");
+  const routeSummaryEl = document.getElementById("routeSummary");
+  const primaryItemTitle = document.getElementById("primaryItemTitle");
+  const primaryItemId = document.getElementById("primaryItemId");
+  const primaryItemRoute = document.getElementById("primaryItemRoute");
+  const primaryItemStatus = document.getElementById("primaryItemStatus");
+  const primaryItemIcon = document.getElementById("primaryItemIcon");
+
+  if (detailTitle) {
+    detailTitle.textContent = `Order #${shipment.orderId}`;
+  }
+  if (detailOrderId) {
+    detailOrderId.textContent = `Tracking ID: ${shipment.orderId}`;
+  }
+  if (detailIcon) {
+    detailIcon.textContent = badgeLetter;
+  }
+  if (detailStatus) {
+    detailStatus.textContent = statusLabel;
+    detailStatus.className = "btn btn-chip btn-info";
+    if (statusLabel.toLowerCase().includes("delivered")) {
+      detailStatus.className = "btn btn-chip btn-muted";
+    }
+  }
+  if (routeSummaryEl) {
+    routeSummaryEl.textContent = routeSummary;
+  }
+  if (primaryItemTitle) {
+    primaryItemTitle.textContent = `Order #${shipment.orderId}`;
+  }
+  if (primaryItemId) {
+    primaryItemId.textContent = `Tracking ID: ${shipment.orderId}`;
+  }
+  if (primaryItemRoute) {
+    primaryItemRoute.textContent = routeSummary;
+  }
+  if (primaryItemStatus) {
+    primaryItemStatus.textContent = statusLabel;
+    primaryItemStatus.className = "btn btn-chip btn-info";
+    if (statusLabel.toLowerCase().includes("delivered")) {
+      primaryItemStatus.className = "btn btn-chip btn-muted";
+    }
+  }
+  if (primaryItemIcon) {
+    primaryItemIcon.textContent = badgeLetter;
+  }
+
   trackingResultEl.innerHTML = `
     <div class="order-card">
       <p><strong>Order ID:</strong> ${shipment.orderId}</p>
@@ -109,7 +168,7 @@ function renderTrackingResult(shipment) {
       <p><strong>Receiver:</strong> ${shipment.receiverName}</p>
       <p><strong>Pickup:</strong> ${shipment.pickupLocation}</p>
       <p><strong>Drop Off:</strong> ${shipment.dropoffLocation}</p>
-      <p><strong>Status:</strong> ${shipment.status}</p>
+      <p><strong>Status:</strong> ${statusLabel}</p>
     </div>
   `;
 }
@@ -141,6 +200,9 @@ async function connectWallet() {
 }
 
 async function submitDeliveryRequest(event) {
+  if (!deliveryForm) {
+    return;
+  }
   event.preventDefault();
   if (!state.escrowContract || !state.account) {
     setStatus("Connect your wallet first.", "warning");
@@ -179,6 +241,9 @@ async function submitDeliveryRequest(event) {
 }
 
 async function trackParcel(event) {
+  if (!trackForm) {
+    return;
+  }
   event.preventDefault();
   if (!state.shippingContract) {
     setStatus("Connect to the blockchain first.", "warning");
@@ -211,76 +276,88 @@ async function init() {
     return;
   }
 
-  connectBtn.addEventListener("click", () => {
-    connectWallet().catch((error) => {
-      setStatus(error.message, "danger");
+  if (connectBtn) {
+    connectBtn.addEventListener("click", () => {
+      connectWallet().catch((error) => {
+        setStatus(error.message, "danger");
+      });
     });
-  });
+  }
 
-  deliveryForm.addEventListener("submit", (event) => {
-    submitDeliveryRequest(event).catch((error) => {
-      setStatus(extractRpcMessage(error), "danger");
+  if (deliveryForm) {
+    deliveryForm.addEventListener("submit", (event) => {
+      submitDeliveryRequest(event).catch((error) => {
+        setStatus(extractRpcMessage(error), "danger");
+      });
     });
-  });
+  }
 
-  trackForm.addEventListener("submit", (event) => {
-    trackParcel(event).catch((error) => {
-      setStatus(extractRpcMessage(error), "danger");
+  if (trackForm) {
+    trackForm.addEventListener("submit", (event) => {
+      trackParcel(event).catch((error) => {
+        setStatus(extractRpcMessage(error), "danger");
+      });
     });
-  });
+  }
 
-  adminLoginForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const formData = new FormData(adminLoginForm);
-    const password = formData.get("adminPassword");
-    if (password !== ADMIN_PASSWORD) {
-      setStatus("Invalid admin password.", "danger");
-      return;
-    }
+  if (adminLoginForm) {
+    adminLoginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const formData = new FormData(adminLoginForm);
+      const password = formData.get("adminPassword");
+      if (password !== ADMIN_PASSWORD) {
+        setStatus("Invalid admin password.", "danger");
+        return;
+      }
 
-    adminActionsEl.classList.add("show");
-    adminLoginForm.reset();
-    setStatus("Admin actions unlocked.", "success");
-  });
+      if (adminActionsEl) {
+        adminActionsEl.classList.add("show");
+      }
+      adminLoginForm.reset();
+      setStatus("Admin actions unlocked.", "success");
+    });
+  }
 
-  adminStatusForm.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-admin]");
-    if (!button) {
-      return;
-    }
+  if (adminStatusForm) {
+    adminStatusForm.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-admin]");
+      if (!button) {
+        return;
+      }
 
-    const action = button.dataset.admin;
-    const formData = new FormData(adminStatusForm);
-    const orderId = formData.get("orderId");
+      const action = button.dataset.admin;
+      const formData = new FormData(adminStatusForm);
+      const orderId = formData.get("orderId");
 
-    if (!orderId) {
-      setStatus("Enter an order ID first.", "warning");
-      return;
-    }
+      if (!orderId) {
+        setStatus("Enter an order ID first.", "warning");
+        return;
+      }
 
-    if (!state.shippingContract || !state.account) {
-      setStatus("Connect your wallet first.", "warning");
-      return;
-    }
+      if (!state.shippingContract || !state.account) {
+        setStatus("Connect your wallet first.", "warning");
+        return;
+      }
 
-    if (action === "collect") {
-      setStatus("Updating status to collected...", "info");
-      state.shippingContract.methods
-        .markCollected(orderId)
-        .send({ from: state.account, gas: 200000 })
-        .then(() => setStatus("Marked as collected.", "success"))
-        .catch((error) => setStatus(extractRpcMessage(error), "danger"));
-    }
+      if (action === "collect") {
+        setStatus("Updating status to collected...", "info");
+        state.shippingContract.methods
+          .markCollected(orderId)
+          .send({ from: state.account, gas: 200000 })
+          .then(() => setStatus("Marked as collected.", "success"))
+          .catch((error) => setStatus(extractRpcMessage(error), "danger"));
+      }
 
-    if (action === "deliver") {
-      setStatus("Updating status to delivered...", "info");
-      state.shippingContract.methods
-        .markDelivered(orderId)
-        .send({ from: state.account, gas: 200000 })
-        .then(() => setStatus("Marked as delivered.", "success"))
-        .catch((error) => setStatus(extractRpcMessage(error), "danger"));
-    }
-  });
+      if (action === "deliver") {
+        setStatus("Updating status to delivered...", "info");
+        state.shippingContract.methods
+          .markDelivered(orderId)
+          .send({ from: state.account, gas: 200000 })
+          .then(() => setStatus("Marked as delivered.", "success"))
+          .catch((error) => setStatus(extractRpcMessage(error), "danger"));
+      }
+    });
+  }
 
   try {
     await loadWeb3({ requestAccounts: false });

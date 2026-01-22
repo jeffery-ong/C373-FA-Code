@@ -157,6 +157,38 @@ const blockchainBenefits = [
     }
     .nav-links a { color: inherit; text-decoration: none; }
     .nav-links a.active { color: var(--primary); }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: white;
+      min-width: 260px;
+    }
+    .search-bar input {
+      border: none;
+      outline: none;
+      font-size: 14px;
+      width: 100%;
+      font-family: inherit;
+    }
+    .user-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      background: white;
+    }
 
     /* Hero */
     .hero{
@@ -379,6 +411,56 @@ const blockchainBenefits = [
     }
     .btn.outline:hover{background: rgba(255,255,255,.10);}
 
+    footer {
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 50px 24px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .footer-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .footer-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      color: var(--text-muted);
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .footer-list a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding: 18px 24px 30px;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
     @media (max-width: 980px){
       .stats-grid{grid-template-columns: repeat(2,1fr);}
       .cards{grid-template-columns: 1fr;}
@@ -392,26 +474,7 @@ const blockchainBenefits = [
 
 <body>
   <div class="page">
-    <header class="site-header">
-      <div class="header-inner">
-        <div class="brand">
-          <div class="logo-badge" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M12 2 3 6.5v11L12 22l9-4.5v-11L12 2zm0 2.4 6.7 3.3L12 11 5.3 7.7 12 4.4zm-7 5.6 6.7 3.3v7.2L5 17.2v-7.2zm14 0v7.2l-6.7 3.3v-7.2L19 10z"
-              />
-            </svg>
-          </div>
-          ZacDelivery
-        </div>
-
-        <nav class="nav-links">
-          <a href="/">Home</a>
-          <a href="/track">Track Parcel</a>
-          <a class="active" href="/aboutus">About Us</a>
-        </nav>
-      </div>
-    </header>
+    <%- include("partials/header", { activePage: "about" }) %>
 
     <main>
       <!-- HERO -->
@@ -550,6 +613,8 @@ const blockchainBenefits = [
         </div>
       </section>
     </main>
+
+    <%- include("partials/footer") %>
   </div>
 
   <script>

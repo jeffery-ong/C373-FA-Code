@@ -13,6 +13,14 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
+app.get("/track", (req, res) => {
+  res.render("track");
+});
+
+app.get("/create", (req, res) => {
+  res.render("create");
+});
+
 //about us page 
 app.get("/aboutus", (req, res) => {
   res.render("aboutus");
