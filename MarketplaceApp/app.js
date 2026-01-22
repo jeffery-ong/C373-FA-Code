@@ -13,6 +13,12 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
+//about us page 
+app.get("/aboutus", (req, res) => {
+  res.render("aboutus");
+});
+
+
 // ---------------- SERVER ----------------
 app.listen(PORT, () => {
   console.log(`FA Marketplace running at http://localhost:${PORT}`);

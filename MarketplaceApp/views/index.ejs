@@ -190,18 +190,6 @@
         border: 1px solid var(--border);
       }
 
-      .btn-warning {
-        background: #ffb84d;
-        color: #4d2b00;
-        box-shadow: 0 10px 20px rgba(255, 184, 77, 0.3);
-      }
-
-      .btn-success {
-        background: #2ed47a;
-        color: #0b3a1d;
-        box-shadow: 0 10px 20px rgba(46, 212, 122, 0.3);
-      }
-
       .btn-sm {
         padding: 8px 14px;
         border-radius: 12px;
@@ -282,30 +270,6 @@
 
       .alert.d-none {
         display: none;
-      }
-
-      .alert-info {
-        border-color: rgba(61, 116, 255, 0.2);
-        background: rgba(61, 116, 255, 0.08);
-        color: #2950b0;
-      }
-
-      .alert-warning {
-        border-color: rgba(255, 184, 77, 0.35);
-        background: rgba(255, 236, 206, 0.7);
-        color: #8a4f00;
-      }
-
-      .alert-danger {
-        border-color: rgba(220, 75, 75, 0.25);
-        background: rgba(255, 222, 222, 0.6);
-        color: #a83434;
-      }
-
-      .alert-success {
-        border-color: rgba(46, 212, 122, 0.25);
-        background: rgba(209, 248, 226, 0.8);
-        color: #167a3e;
       }
 
       .cards {
@@ -397,11 +361,13 @@
             </div>
             ZacDelivery
           </div>
+
           <nav class="nav-links">
-            <a class="active" href="#">Home</a>
-            <a href="#">Track Parcel</a>
-            <a href="#">About Us</a>
+            <a class="active" href="/">Home</a>
+            <a href="/track">Track Parcel</a>
+            <a href="/aboutus">About Us</a>
           </nav>
+
           <div class="header-actions">
             <label class="search-bar" aria-label="Search tracking">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
@@ -434,22 +400,23 @@
               </svg>
               Blockchain-Secured Deliveries
             </div>
-            <h1>
-              Blockchain-Powered <span>Secure</span> Deliveries
-            </h1>
+
+            <h1>Blockchain-Powered <span>Secure</span> Deliveries</h1>
             <p>
               Experience the future of shipping with smart contract protection,
               real-time tracking, and transparent delivery verification.
             </p>
+
             <div class="hero-actions">
-              <button class="btn btn-primary">Track Parcel</button>
-              <button class="btn btn-ghost">Create Delivery</button>
+              <a class="btn btn-primary" href="/track">Track Parcel</a>
+              <a class="btn btn-ghost" href="#">Create Delivery</a>
             </div>
           </div>
         </section>
 
         <section class="section">
           <div class="alert d-none" id="statusMessage"></div>
+
           <div class="cards">
             <div class="card">
               <h3>Create New Order (Payment Escrow)</h3>
@@ -467,6 +434,7 @@
                 </button>
               </form>
             </div>
+
             <div class="card">
               <h3>Orders (Shipping & Delivery Tracking)</h3>
               <div id="ordersList"></div>

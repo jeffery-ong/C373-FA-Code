@@ -1,0 +1,559 @@
+<%
+const stats = [
+  { value: "1M+", label: "Deliveries Completed" },
+  { value: "150+", label: "Countries Served" },
+  { value: "99.8%", label: "Delivery Success Rate" },
+  { value: "24/7", label: "Support Available" },
+];
+
+const blockchainBenefits = [
+  {
+    icon: "file-text",
+    title: "Payment Automation (Smart Contract)",
+    description:
+      "Funds are held in secure escrow and automatically released after delivery confirmation. This eliminates payment disputes and protects both buyers and sellers from fraud.",
+    features: [
+      "Automatic escrow holding",
+      "Instant payment release on delivery",
+      "No payment disputes",
+      "Fraud protection",
+    ],
+  },
+  {
+    icon: "map-pin",
+    title: "Shipping & Delivery Tracking",
+    description:
+      "Real-time delivery status visible to both parties. Every checkpoint is recorded immutably, preventing fake delivery claims and providing complete transparency.",
+    features: [
+      "Real-time GPS tracking",
+      "Shared visibility for all parties",
+      "Immutable checkpoint records",
+      "Prevents false delivery claims",
+    ],
+  },
+  {
+    icon: "shield",
+    title: "Transparency & Trust",
+    description:
+      "All delivery records are stored on the blockchain and cannot be altered. Both sender and receiver see the exact same data, building trust through transparency.",
+    features: [
+      "Tamper-proof records",
+      "Equal data access",
+      "Verifiable history",
+      "Dispute resolution made easy",
+    ],
+  },
+];
+%>
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>About ZacDelivery</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root{
+      --bg:#f5f8ff;
+      --bg-soft:#f0f4ff;
+      --surface:#ffffff;
+      --text:#0f1a2b;
+      --text-muted:#5a6a85;
+      --primary:#3d74ff;
+      --border:#e0e6f3;
+      --shadow: 0 18px 40px rgba(15, 26, 43, 0.08);
+
+      --primary-weak: rgba(61,116,255,.10);
+      --radius:22px;
+      --container: 1100px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Manrope", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background: radial-gradient(circle at top, #fefeff 0%, var(--bg) 55%);
+      min-height:100vh;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(61, 116, 255, 0.18), transparent 70%);
+      z-index: -1;
+      filter: blur(10px);
+    }
+
+    body::before { top: -180px; left: -120px; }
+    body::after { bottom: -220px; right: -140px; }
+
+    a{color:inherit;text-decoration:none}
+    .page{min-height:100vh; display:flex; flex-direction:column;}
+    main{flex:1}
+    .container{max-width:var(--container); margin:0 auto; padding:0 24px;}
+
+    /* Header (same style as index) */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      background: linear-gradient(140deg, #3d74ff, #6aa5ff);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 20px rgba(61, 116, 255, 0.3);
+    }
+    .logo-badge svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .nav-links a { color: inherit; text-decoration: none; }
+    .nav-links a.active { color: var(--primary); }
+
+    /* Hero */
+    .hero{
+      position:relative;
+      overflow:hidden;
+      padding:72px 0;
+      border-bottom:1px solid var(--border);
+      background:
+        radial-gradient(700px 320px at 90% 0%, rgba(61,116,255,.12), transparent 60%),
+        radial-gradient(700px 320px at 10% 100%, rgba(61,116,255,.10), transparent 60%),
+        linear-gradient(135deg, rgba(61,116,255,.06), #fff 40%, rgba(61,116,255,.08));
+    }
+    .hero-inner{max-width:780px; margin:0 auto; text-align:center;}
+    .hero h1{
+      margin:0 0 14px;
+      font-family:"Space Grotesk", system-ui, sans-serif;
+      font-size:44px;
+      line-height:1.1;
+      letter-spacing:-.02em;
+      font-weight:800;
+    }
+    .hero .brandText{color:var(--primary)}
+    .hero p{
+      margin:0;
+      font-size:18px;
+      line-height:1.7;
+      color:var(--text-muted);
+    }
+
+    /* Stats */
+    .stats{
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      padding:18px 0 24px;
+    }
+    .stats-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:18px;
+    }
+    .stat{text-align:center; padding:10px 6px;}
+    .stat .value{
+      font-size:28px;
+      font-weight:800;
+      color:var(--primary);
+      margin:0;
+    }
+    .stat .label{
+      margin:6px 0 0;
+      font-size:13px;
+      color:var(--text-muted);
+    }
+
+    /* Section */
+    .section{padding:56px 0;}
+    .section-title{
+      text-align:center;
+      max-width:820px;
+      margin:0 auto 26px;
+    }
+    .section-title h2{
+      margin:0 0 10px;
+      font-family:"Space Grotesk", system-ui, sans-serif;
+      font-size:32px;
+      letter-spacing:-.02em;
+    }
+    .section-title p{
+      margin:0 auto;
+      color:var(--text-muted);
+      line-height:1.6;
+      max-width:640px;
+    }
+
+    /* Cards */
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:18px;
+    }
+    .card{
+      position:relative;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding:24px;
+    }
+    .card::after{
+      content:"";
+      position:absolute;
+      top:-48px; right:-48px;
+      width:160px; height:160px;
+      background:var(--primary-weak);
+      border-radius:999px;
+    }
+    .card-body{position:relative;}
+    .icon-box{
+      width:48px; height:48px;
+      display:grid; place-items:center;
+      border-radius:16px;
+      background:var(--primary);
+      color:#fff;
+    }
+    .card h3{
+      margin:14px 0 8px;
+      font-size:18px;
+      letter-spacing:-.01em;
+    }
+    .card p{
+      margin:0 0 14px;
+      color:var(--text-muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+    .features{list-style:none; padding:0; margin:0; display:grid; gap:8px;}
+    .features li{
+      display:flex; align-items:center; gap:10px;
+      color:var(--text-muted);
+      font-size:13px;
+    }
+    .dot{
+      width:7px; height:7px;
+      border-radius:999px;
+      background:var(--primary);
+      flex:0 0 auto;
+    }
+
+    /* Mission */
+    .mission{
+      background: rgba(15, 26, 43, 0.03);
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+    }
+    .mission-grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:28px;
+      align-items:center;
+    }
+    .mission h2{
+      margin:0 0 14px;
+      font-family:"Space Grotesk", system-ui, sans-serif;
+      font-size:32px;
+      letter-spacing:-.02em;
+    }
+    .mission p{margin:0 0 14px; color:var(--text-muted); line-height:1.7;}
+    .pill-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;}
+    .pill{
+      display:flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      color:var(--text);
+      box-shadow: 0 8px 18px rgba(2,8,23,.04);
+    }
+    .pill .mini{
+      width:28px; height:28px;
+      border-radius:10px;
+      background: rgba(61,116,255,.12);
+      display:grid; place-items:center;
+      color:var(--primary);
+    }
+
+    .mini-cards{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:14px;
+    }
+    .mini-card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .mini-card h4{margin:10px 0 6px; font-size:14px;}
+    .mini-card p{margin:0; color:var(--text-muted); font-size:12.5px; line-height:1.6;}
+    .mini-card.wide{grid-column: 1 / -1;}
+
+    /* CTA */
+    .cta{
+      background: var(--primary);
+      color:#fff;
+      padding:56px 0;
+      text-align:center;
+    }
+    .cta h2{
+      margin:0 0 10px;
+      font-family:"Space Grotesk", system-ui, sans-serif;
+      font-size:30px;
+      letter-spacing:-.02em;
+    }
+    .cta p{margin:0 auto 18px; max-width:720px; color:rgba(255,255,255,.82); line-height:1.7;}
+    .cta-actions{display:flex; justify-content:center; gap:12px; flex-wrap:wrap;}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      height:44px;
+      padding:0 16px;
+      border-radius:14px;
+      font-weight:700;
+      border:1px solid transparent;
+      cursor:pointer;
+      transition: .15s ease;
+      user-select:none;
+      text-decoration:none;
+    }
+    .btn.secondary{
+      background:#fff;
+      color: var(--primary);
+      border-color:#fff;
+    }
+    .btn.secondary:hover{transform: translateY(-1px); box-shadow: 0 12px 25px rgba(0,0,0,.15);}
+    .btn.outline{
+      background: transparent;
+      color:#fff;
+      border-color: rgba(255,255,255,.75);
+    }
+    .btn.outline:hover{background: rgba(255,255,255,.10);}
+
+    @media (max-width: 980px){
+      .stats-grid{grid-template-columns: repeat(2,1fr);}
+      .cards{grid-template-columns: 1fr;}
+      .mission-grid{grid-template-columns: 1fr;}
+      .mini-cards{grid-template-columns: 1fr;}
+      .hero h1{font-size:38px;}
+      .header-inner{flex-direction:column; align-items:flex-start;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="logo-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 2 3 6.5v11L12 22l9-4.5v-11L12 2zm0 2.4 6.7 3.3L12 11 5.3 7.7 12 4.4zm-7 5.6 6.7 3.3v7.2L5 17.2v-7.2zm14 0v7.2l-6.7 3.3v-7.2L19 10z"
+              />
+            </svg>
+          </div>
+          ZacDelivery
+        </div>
+
+        <nav class="nav-links">
+          <a href="/">Home</a>
+          <a href="/track">Track Parcel</a>
+          <a class="active" href="/aboutus">About Us</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero">
+        <div class="container">
+          <div class="hero-inner">
+            <h1>About <span class="brandText">ZacDelivery</span></h1>
+            <p>
+              ZacDelivery is a blockchain-enabled marketplace that protects buyers and sellers
+              through smart contract escrow and transparent shipping tracking. We’re
+              revolutionizing the delivery industry with trust and technology.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <section class="stats">
+        <div class="container">
+          <div class="stats-grid">
+            <% stats.forEach((s) => { %>
+              <div class="stat">
+                <p class="value"><%= s.value %></p>
+                <p class="label"><%= s.label %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <!-- BENEFITS -->
+      <section class="section">
+        <div class="container">
+          <div class="section-title">
+            <h2>Why Blockchain for Delivery?</h2>
+            <p>
+              Discover how blockchain technology transforms the shipping experience,
+              providing security, transparency, and automation.
+            </p>
+          </div>
+
+          <div class="cards">
+            <% blockchainBenefits.forEach((b) => { %>
+              <article class="card">
+                <div class="card-body">
+                  <div class="icon-box">
+                    <i data-lucide="<%= b.icon %>"></i>
+                  </div>
+
+                  <h3><%= b.title %></h3>
+                  <p><%= b.description %></p>
+
+                  <ul class="features">
+                    <% b.features.forEach((f) => { %>
+                      <li><span class="dot"></span><span><%= f %></span></li>
+                    <% }) %>
+                  </ul>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <!-- MISSION -->
+      <section class="section mission">
+        <div class="container">
+          <div class="mission-grid">
+            <div>
+              <h2>Our Mission</h2>
+              <p>
+                At ZacDelivery, we believe that every package deserves to be tracked with
+                complete transparency. Our mission is to eliminate fraud, disputes, and
+                uncertainty from the delivery process using blockchain technology.
+              </p>
+              <p>
+                We’re building a future where senders and receivers have equal visibility,
+                payments are secure, and trust is guaranteed by technology—not promises.
+              </p>
+
+              <div class="pill-row">
+                <div class="pill">
+                  <span class="mini"><i data-lucide="users"></i></span>
+                  <span><strong>Customer First</strong></span>
+                </div>
+                <div class="pill">
+                  <span class="mini"><i data-lucide="globe"></i></span>
+                  <span><strong>Global Reach</strong></span>
+                </div>
+                <div class="pill">
+                  <span class="mini"><i data-lucide="award"></i></span>
+                  <span><strong>Excellence</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-cards">
+              <div class="mini-card">
+                <i data-lucide="shield"></i>
+                <h4>100% Secure</h4>
+                <p>Every transaction is protected by smart contract escrow.</p>
+              </div>
+
+              <div class="mini-card">
+                <i data-lucide="map-pin"></i>
+                <h4>Real-Time Tracking</h4>
+                <p>Track your package every step of the way.</p>
+              </div>
+
+              <div class="mini-card wide">
+                <i data-lucide="file-text"></i>
+                <h4>Immutable Records</h4>
+                <p>
+                  All delivery data is stored on the blockchain and cannot be altered,
+                  providing a permanent, trustworthy record.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="cta">
+        <div class="container">
+          <h2>Ready to Experience Secure Shipping?</h2>
+          <p>
+            Join thousands of satisfied customers who trust ZacDelivery for their shipping needs.
+            Start your first blockchain-secured delivery today.
+          </p>
+
+          <div class="cta-actions">
+            <a class="btn secondary" href="/">View Our Services <i data-lucide="arrow-right"></i></a>
+            <a class="btn outline" href="/track">Track a Parcel</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
