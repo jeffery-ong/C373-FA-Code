@@ -6,7 +6,8 @@ const createOrderForm = document.getElementById("createOrderForm");
 
 const state = {
   web3: null,
-  contract: null,
+  escrowContract: null,
+  shippingContract: null,
   account: null,
 };
 
@@ -27,55 +28,85 @@ function formatAccount(address) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-async function loadContract() {
-  const response = await fetch("/abis/MarketplaceContract.json");
+async function loadArtifact(path) {
+  const response = await fetch(path);
   if (!response.ok) {
-    throw new Error("Contract artifact not found. Run truffle migrate.");
+    throw new Error(`Contract artifact not found at ${path}.`);
   }
+  return response.json();
+}
 
-  const artifact = await response.json();
+async function loadContracts() {
+  const [escrowArtifact, shippingArtifact] = await Promise.all([
+    loadArtifact("/abis/PaymentEscrow.json"),
+    loadArtifact("/abis/ShippingTracking.json"),
+  ]);
+
   const networkId = await state.web3.eth.net.getId();
-  const deployedNetwork = artifact.networks[networkId];
+  const escrowNetwork = escrowArtifact.networks[networkId];
+  const shippingNetwork = shippingArtifact.networks[networkId];
 
-  if (!deployedNetwork || !deployedNetwork.address) {
-    throw new Error("Contract not deployed on the connected network.");
+  if (!escrowNetwork || !escrowNetwork.address) {
+    throw new Error("PaymentEscrow not deployed on the connected network.");
   }
 
-  state.contract = new state.web3.eth.Contract(
-    artifact.abi,
-    deployedNetwork.address
+  if (!shippingNetwork || !shippingNetwork.address) {
+    throw new Error("ShippingTracking not deployed on the connected network.");
+  }
+
+  state.escrowContract = new state.web3.eth.Contract(
+    escrowArtifact.abi,
+    escrowNetwork.address
+  );
+  state.shippingContract = new state.web3.eth.Contract(
+    shippingArtifact.abi,
+    shippingNetwork.address
   );
 }
 
-async function connectWallet() {
+async function loadWeb3({ requestAccounts = true } = {}) {
   if (!window.ethereum) {
-    setStatus("MetaMask not detected. Install it to continue.", "danger");
-    return;
+    throw new Error("MetaMask not detected. Install it to continue.");
   }
 
   state.web3 = new Web3(window.ethereum);
   const accounts = await window.ethereum.request({
-    method: "eth_requestAccounts",
+    method: requestAccounts ? "eth_requestAccounts" : "eth_accounts",
   });
 
-  state.account = accounts[0];
+  state.account = accounts[0] || null;
   accountEl.textContent = formatAccount(state.account);
 
-  await loadContract();
+  return Boolean(state.account);
+}
+
+async function loadBlockchainData() {
+  if (!state.account) {
+    return;
+  }
+
+  await loadContracts();
   await loadOrders();
   clearStatus();
 }
 
+async function connectWallet() {
+  const hasAccount = await loadWeb3({ requestAccounts: true });
+  if (hasAccount) {
+    await loadBlockchainData();
+  }
+}
+
 async function loadOrders() {
-  if (!state.contract) {
+  if (!state.escrowContract) {
     return;
   }
 
-  const orderCount = await state.contract.methods.orderCount().call();
+  const orderCount = await state.escrowContract.methods.orderCount().call();
   const orders = [];
 
   for (let i = 1; i <= Number(orderCount); i += 1) {
-    const o = await state.contract.methods.getOrder(i).call();
+    const o = await state.escrowContract.methods.getOrder(i).call();
     orders.push({
       id: o[0],
       buyer: o[1],
@@ -125,9 +156,40 @@ function renderOrders(orders) {
   ordersListEl.innerHTML = html;
 }
 
+function extractRpcMessage(error) {
+  if (!error) {
+    return "Transaction failed.";
+  }
+
+  if (error.message && error.message.includes("Internal JSON-RPC error")) {
+    return "Transaction reverted. Check account permissions and order state.";
+  }
+
+  if (error.data && typeof error.data === "object") {
+    const dataEntry = Object.values(error.data)[0];
+    if (dataEntry && dataEntry.reason) {
+      return dataEntry.reason;
+    }
+  }
+
+  return error.message || "Transaction failed.";
+}
+
+async function getOrder(orderId) {
+  const o = await state.escrowContract.methods.getOrder(orderId).call();
+  return {
+    id: o[0],
+    buyer: o[1],
+    seller: o[2],
+    amount: state.web3.utils.fromWei(o[3], "ether"),
+    shipped: o[4],
+    delivered: o[5],
+  };
+}
+
 async function createOrder(event) {
   event.preventDefault();
-  if (!state.contract || !state.account) {
+  if (!state.escrowContract || !state.account) {
     setStatus("Connect your wallet first.", "warning");
     return;
   }
@@ -137,7 +199,7 @@ async function createOrder(event) {
   const amount = formData.get("amount");
 
   setStatus("Creating order...", "info");
-  await state.contract.methods.createOrder(seller).send({
+  await state.escrowContract.methods.createOrder(seller).send({
     from: state.account,
     value: state.web3.utils.toWei(amount, "ether"),
     gas: 300000,
@@ -150,24 +212,40 @@ async function createOrder(event) {
 
 async function handleOrderAction(event) {
   const button = event.target.closest("button[data-action]");
-  if (!button || !state.contract || !state.account) {
+  if (!button || !state.shippingContract || !state.escrowContract || !state.account) {
     return;
   }
 
   const action = button.dataset.action;
   const orderId = button.dataset.id;
 
+  const order = await getOrder(orderId);
+  if (action === "ship" && state.account.toLowerCase() !== order.seller.toLowerCase()) {
+    setStatus("Only the seller can mark an order as shipped.", "warning");
+    return;
+  }
+
+  if (action === "deliver" && state.account.toLowerCase() !== order.buyer.toLowerCase()) {
+    setStatus("Only the buyer can confirm delivery.", "warning");
+    return;
+  }
+
+  if (action === "deliver" && !order.shipped) {
+    setStatus("Order must be shipped before delivery can be confirmed.", "warning");
+    return;
+  }
+
   setStatus("Submitting transaction...", "info");
 
   if (action === "ship") {
-    await state.contract.methods.markShipped(orderId).send({
+    await state.shippingContract.methods.markShipped(orderId).send({
       from: state.account,
       gas: 300000,
     });
   }
 
   if (action === "deliver") {
-    await state.contract.methods.confirmDelivery(orderId).send({
+    await state.shippingContract.methods.confirmDelivery(orderId).send({
       from: state.account,
       gas: 300000,
     });
@@ -191,26 +269,23 @@ async function init() {
 
   createOrderForm.addEventListener("submit", (event) => {
     createOrder(event).catch((error) => {
-      setStatus(error.message, "danger");
+      setStatus(extractRpcMessage(error), "danger");
     });
   });
 
   ordersListEl.addEventListener("click", (event) => {
     handleOrderAction(event).catch((error) => {
-      setStatus(error.message, "danger");
+      setStatus(extractRpcMessage(error), "danger");
     });
   });
 
-  const existingAccounts = await window.ethereum.request({
-    method: "eth_accounts",
-  });
-
-  if (existingAccounts.length > 0) {
-    try {
-      await connectWallet();
-    } catch (error) {
-      setStatus(error.message, "danger");
+  try {
+    const hasAccount = await loadWeb3({ requestAccounts: false });
+    if (hasAccount) {
+      await loadBlockchainData();
     }
+  } catch (error) {
+    setStatus(error.message, "danger");
   }
 
   window.ethereum.on("accountsChanged", () => {
