@@ -319,12 +319,7 @@ async function init() {
     });
   }
 
-  try {
-    await ensureContracts({ requestAccounts: false });
-    await loadTrackingFromPage();
-  } catch (error) {
-    setStatus(error.message, "danger");
-  }
+  setStatus("Connect your wallet to load blockchain data.", "info");
 
   window.ethereum.on("accountsChanged", () => {
     window.location.reload();
@@ -338,3 +333,4 @@ async function init() {
 init().catch((error) => {
   setStatus(error.message, "danger");
 });
+

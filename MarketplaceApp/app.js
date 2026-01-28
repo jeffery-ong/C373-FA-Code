@@ -6,6 +6,7 @@ const PORT = 3001;
 // ---------------- CONFIG ----------------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.use("/abis", express.static(path.join(__dirname, "..", "build", "contracts")));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ---------------- HOME PAGE ----------------
@@ -47,3 +48,4 @@ app.get("/trackdelivery/:trackingId", (req, res) => {
 app.listen(PORT, () => {
   console.log(`FA Marketplace running at http://localhost:${PORT}`);
 });
+
