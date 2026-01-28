@@ -20,6 +20,13 @@
         Track Parcel
       </a>
       <a
+        class="<%= activePage === 'my' ? 'active' : '' %>"
+        href="/my-deliveries"
+        data-admin-hidden="true"
+      >
+        My Deliveries
+      </a>
+      <a
         class="<%= activePage === 'create' ? 'active' : '' %>"
         href="/create"
         data-admin-hidden="true"
@@ -35,7 +42,12 @@
       </a>
     </nav>
 
-    <a class="btn btn-primary btn-chip admin-dashboard-link" href="/create" data-admin-only="true">
+    <a
+      class="btn btn-primary btn-chip admin-dashboard-link"
+      href="/create"
+      data-admin-only="true"
+      style="display: none;"
+    >
       Dashboard
     </a>
 

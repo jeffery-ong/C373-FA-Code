@@ -8,6 +8,7 @@ const adminPanelEl = document.getElementById("adminPanel");
 const adminOrdersEl = document.getElementById("adminOrders");
 const adminRefreshBtn = document.getElementById("adminRefresh");
 const userPanelEl = document.getElementById("userPanel");
+const myDeliveriesEl = document.getElementById("myDeliveries");
 
 const ADMIN_ACCOUNTS = new Set([
   "0xe2d15dd1228d095a7327bbf947fe80c03d87d9e8",
@@ -16,72 +17,15 @@ const ADMIN_ACCOUNTS = new Set([
   "0xa8f1ebc83dff1984e5281c74aebe969073ac94e3",
 ]);
 
-const TRACKING_STORAGE_KEY = "zacTrackingMap";
-
-function loadTrackingMap() {
-  if (!window.localStorage) return {};
-  try {
-    const raw = window.localStorage.getItem(TRACKING_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (error) {
-    return {};
-  }
-}
-
-function saveTrackingMap(map) {
-  if (!window.localStorage) return;
-  window.localStorage.setItem(TRACKING_STORAGE_KEY, JSON.stringify(map));
-}
-
-function getRandomInt(min, max) {
-  const range = max - min + 1;
-  if (window.crypto && window.crypto.getRandomValues) {
-    const buffer = new Uint32Array(1);
-    window.crypto.getRandomValues(buffer);
-    return min + (buffer[0] % range);
-  }
-  return min + Math.floor(Math.random() * range);
-}
-
-function generateRandomDigits(length) {
-  let result = "";
-  for (let i = 0; i < length; i += 1) {
-    result += getRandomInt(0, 9);
-  }
-  return result;
-}
-
-function generateTrackingId(existingMap) {
-  const length = getRandomInt(7, 10);
-  const digits = generateRandomDigits(length);
-  const trackingId = `ZAC${digits}`;
-  if (existingMap && existingMap[trackingId]) {
-    return generateTrackingId(existingMap);
-  }
-  return trackingId;
-}
-
 function normalizeTrackingId(trackingId) {
   return String(trackingId || "").trim().toUpperCase();
 }
 
 function isValidTrackingFormat(trackingId) {
-  return /^ZAC\d{3,10}$/.test(normalizeTrackingId(trackingId));
-}
-
-function findTrackingIdByOrderId(orderId) {
-  const map = loadTrackingMap();
-  const numericOrderId = Number(orderId);
-  return Object.keys(map).find(
-    (key) => Number(map[key]?.orderId) === numericOrderId
-  );
+  return /^ZAC\d{1,}$/.test(normalizeTrackingId(trackingId));
 }
 
 function orderIdToTrackingId(orderId) {
-  const mappedTrackingId = findTrackingIdByOrderId(orderId);
-  if (mappedTrackingId) {
-    return mappedTrackingId;
-  }
   const n = Number(orderId);
   if (!Number.isFinite(n) || n <= 0) return "ZAC???";
   return "ZAC" + String(n).padStart(3, "0");
@@ -90,11 +34,6 @@ function orderIdToTrackingId(orderId) {
 function trackingIdToOrderId(trackingId) {
   const t = normalizeTrackingId(trackingId);
   if (!isValidTrackingFormat(t)) return null;
-
-  const map = loadTrackingMap();
-  if (map[t] && Number.isFinite(Number(map[t].orderId))) {
-    return Number(map[t].orderId);
-  }
 
   const match = t.match(/^ZAC(\d{1,})$/);
   if (!match) return null;
@@ -319,6 +258,44 @@ function renderTrackingResult(shipment) {
   });
 }
 
+function resetTrackingView(trackingId, statusText = "Not found") {
+  if (!trackingResultEl) {
+    return;
+  }
+
+  const detailTitle = document.getElementById("detailTitle");
+  const detailOrderId = document.getElementById("detailOrderId");
+  const detailStatus = document.getElementById("detailStatus");
+  const detailIcon = document.getElementById("detailIcon");
+  const routeSummaryEl = document.getElementById("routeSummary");
+
+  if (detailTitle) {
+    detailTitle.textContent = "Tracking Details";
+  }
+  if (detailOrderId) {
+    detailOrderId.textContent = `Tracking ID: ${trackingId}`;
+  }
+  if (detailStatus) {
+    detailStatus.textContent = statusText;
+    detailStatus.className = "btn btn-chip btn-muted";
+  }
+  if (detailIcon) {
+    detailIcon.textContent = "—";
+  }
+  if (routeSummaryEl) {
+    routeSummaryEl.textContent = "";
+  }
+
+  trackingResultEl.innerHTML = `
+    <p><strong>Sender:</strong> -</p>
+    <p><strong>Sender Phone:</strong> -</p>
+    <p><strong>Receiver:</strong> -</p>
+    <p><strong>Pickup:</strong> -</p>
+    <p><strong>Drop Off:</strong> -</p>
+    <p><strong>Status:</strong> -</p>
+  `;
+}
+
 function setAdminView(isAdmin) {
   if (adminPanelEl) {
     adminPanelEl.classList.toggle("hidden", !isAdmin);
@@ -354,19 +331,30 @@ function renderAdminOrders(orders) {
       const trackingId = orderIdToTrackingId(order.orderId);
       return `
         <article class="admin-card">
-          <div class="admin-row">
-            <div>
-              <div class="admin-title">Order ${trackingId}</div>
-              <div class="admin-meta">Order ID: ${order.orderId}</div>
+          <a class="admin-card-link" href="/trackdelivery/${trackingId}">
+            <div class="admin-row">
+              <div>
+                <div class="admin-title">Order ${trackingId}</div>
+                <div class="admin-meta">Order ID: ${order.orderId}</div>
+              </div>
+              <span class="status-pill">${order.status}</span>
             </div>
-            <span class="status-pill">${order.status}</span>
-          </div>
-          <div class="admin-meta">
-            ${order.pickupLocation} → ${order.dropoffLocation}
-          </div>
-          <div class="admin-meta">
-            Sender: ${order.senderName} (${order.senderPhone}) · Receiver: ${order.receiverName}
-          </div>
+            <div class="admin-meta">
+              Pickup: ${order.pickupLocation}
+            </div>
+            <div class="admin-meta">
+              Drop Off: ${order.dropoffLocation}
+            </div>
+            <div class="admin-meta">
+              Sender: ${order.senderName} (${order.senderPhone})
+            </div>
+            <div class="admin-meta">
+              Receiver: ${order.receiverName}
+            </div>
+            <div class="admin-meta">
+              Sender Wallet: ${order.sender}
+            </div>
+          </a>
           <div class="admin-actions">
             <button class="btn btn-ghost btn-chip" data-admin-action="collect" data-order-id="${order.orderId}">
               Mark Collected / On Delivery
@@ -417,6 +405,93 @@ async function loadAdminOrders() {
   }
 
   renderAdminOrders(orders);
+}
+
+function renderMyDeliveries(orders) {
+  if (!myDeliveriesEl) {
+    return;
+  }
+
+  if (!orders.length) {
+    myDeliveriesEl.innerHTML =
+      '<div class="empty-state">No deliveries found for this account.</div>';
+    return;
+  }
+
+  myDeliveriesEl.innerHTML = orders
+    .map((order) => {
+      const trackingId = orderIdToTrackingId(order.orderId);
+      return `
+        <article class="delivery-card">
+          <div class="delivery-row">
+            <div>
+              <div class="delivery-title">Order ${trackingId}</div>
+              <div class="delivery-meta">Order ID: ${order.orderId}</div>
+            </div>
+            <span class="status-pill">${order.status}</span>
+          </div>
+          <div class="delivery-meta">
+            ${order.pickupLocation} → ${order.dropoffLocation}
+          </div>
+          <div class="delivery-meta">
+            Receiver: ${order.receiverName}
+          </div>
+          <div class="delivery-row">
+            <a class="btn btn-ghost btn-chip" href="/trackdelivery/${trackingId}">
+              View Details
+            </a>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function loadMyDeliveries() {
+  if (!myDeliveriesEl) {
+    return;
+  }
+
+  if (!state.account) {
+    myDeliveriesEl.innerHTML =
+      '<div class="empty-state">Connect your wallet to see your deliveries.</div>';
+    return;
+  }
+
+  myDeliveriesEl.innerHTML = '<div class="empty-state">Loading...</div>';
+
+  const orderCount = Number(
+    await state.escrowContract.methods.orderCount().call()
+  );
+
+  if (!Number.isFinite(orderCount) || orderCount <= 0) {
+    renderMyDeliveries([]);
+    return;
+  }
+
+  const orders = [];
+  for (let i = 1; i <= orderCount; i += 1) {
+    try {
+      const shipment = await state.shippingContract.methods.getShipment(i).call();
+      if (String(shipment[1]).toLowerCase() !== state.account.toLowerCase()) {
+        continue;
+      }
+      orders.push({
+        orderId: Number(shipment[0]),
+        sender: shipment[1],
+        pickupLocation: shipment[2],
+        dropoffLocation: shipment[3],
+        senderName: shipment[4],
+        senderPhone: shipment[5],
+        receiverName: shipment[6],
+        status: getStatusLabel(shipment[7]),
+      });
+    } catch (error) {
+      continue;
+    }
+  }
+
+  renderMyDeliveries(orders);
 }
 
 async function handleAdminAction(orderId, action) {
@@ -483,18 +558,27 @@ async function loadTrackingFromPage() {
   const trackingId = normalizeTrackingId(window.TRACKING_ID);
   if (!isValidTrackingFormat(trackingId)) {
     setStatus("Invalid tracking ID format. Use ZAC001, ZAC002, etc.", "danger");
+    resetTrackingView(trackingId, "Invalid ID");
     return;
   }
 
   const orderId = trackingIdToOrderId(trackingId);
   if (!orderId) {
     setStatus("No order found for this tracking ID.", "danger");
+    resetTrackingView(trackingId, "Not found");
     return;
   }
 
   setStatus(`Fetching ${trackingId} from blockchain...`, "info");
 
-  const shipment = await state.shippingContract.methods.getShipment(orderId).call();
+  let shipment;
+  try {
+    shipment = await state.shippingContract.methods.getShipment(orderId).call();
+  } catch (error) {
+    setStatus("No order found for this tracking ID.", "danger");
+    resetTrackingView(trackingId, "Not found");
+    return;
+  }
 
   renderTrackingResult({
     orderId: shipment[0],
@@ -514,6 +598,7 @@ async function connectWallet() {
   await ensureContracts({ requestAccounts: true });
   await loadTrackingFromPage();
   await updateAdminPanel();
+  await loadMyDeliveries();
 }
 
 async function submitDeliveryRequest(event) {
@@ -553,18 +638,7 @@ async function submitDeliveryRequest(event) {
     receipt?.events?.OrderCreated?.returnValues?.orderId ||
     (await state.escrowContract.methods.orderCount().call());
 
-  const trackingMap = loadTrackingMap();
-  const trackingId = generateTrackingId(trackingMap);
-  trackingMap[trackingId] = {
-    orderId: Number(orderId),
-    pickupLocation,
-    dropoffLocation,
-    senderName,
-    senderPhone,
-    receiverName,
-    createdAt: Date.now(),
-  };
-  saveTrackingMap(trackingMap);
+  const trackingId = orderIdToTrackingId(orderId);
 
   deliveryForm.reset();
   setStatus(
@@ -588,24 +662,26 @@ async function trackParcel(event) {
     return;
   }
 
-  const trackingMap = loadTrackingMap();
-  const entry = trackingMap[normalizedTrackingId];
-  if (!entry || !Number.isFinite(Number(entry.orderId))) {
+  if (trackForm.dataset.redirect === "true") {
+    window.location.href = `/trackdelivery/${encodeURIComponent(normalizedTrackingId)}`;
+    return;
+  }
+
+  const orderId = trackingIdToOrderId(normalizedTrackingId);
+  if (!orderId) {
     setStatus("No order found for this tracking ID.", "warning");
     return;
   }
-
-  const canonicalTrackingId = normalizedTrackingId;
-
-  if (trackForm.dataset.redirect === "true") {
-    window.location.href = `/trackdelivery/${encodeURIComponent(canonicalTrackingId)}`;
-    return;
-  }
-
-  const orderId = Number(entry.orderId);
   await ensureContracts({ requestAccounts: false });
   setStatus("Fetching delivery details...", "info");
-  const shipment = await state.shippingContract.methods.getShipment(orderId).call();
+  let shipment;
+  try {
+    shipment = await state.shippingContract.methods.getShipment(orderId).call();
+  } catch (error) {
+    setStatus("No order found for this tracking ID.", "warning");
+    resetTrackingView(normalizedTrackingId, "Not found");
+    return;
+  }
 
   renderTrackingResult({
     orderId: shipment[0],
@@ -783,11 +859,15 @@ async function init() {
   try {
     await ensureContracts({ requestAccounts: false });
     await updateAdminPanel();
+    await loadTrackingFromPage();
+    await loadMyDeliveries();
   } catch (error) {
     // Only show errors when admin actually connects.
   }
 
-  setStatus("Connect your wallet to load blockchain data.", "info");
+  if (deliveryForm) {
+    setStatus("Connect your wallet to create deliveries.", "info");
+  }
 
   window.ethereum.on("accountsChanged", () => {
     window.location.reload();

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ZacDelivery | Track Parcel</title>
+    <title>ZacDelivery | My Deliveries</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -10,7 +10,6 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-
     <style>
       :root {
         color-scheme: light;
@@ -81,23 +80,6 @@
         color: var(--primary);
       }
 
-      .search-bar {
-        display: flex;
-        gap: 10px;
-        padding: 8px 12px;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: white;
-      }
-
-      .search-bar input {
-        border: none;
-        outline: none;
-        font-size: 14px;
-        width: 180px;
-        font-family: inherit;
-      }
-
       .btn {
         border: none;
         border-radius: 10px;
@@ -112,6 +94,12 @@
         color: white;
       }
 
+      .btn-ghost {
+        background: white;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+
       .btn-chip {
         padding: 6px 12px;
         font-size: 12px;
@@ -123,7 +111,7 @@
       }
 
       .container {
-        max-width: 720px;
+        max-width: 900px;
         margin: 0 auto;
       }
 
@@ -146,10 +134,6 @@
         color: var(--text-muted);
       }
 
-      .hidden {
-        display: none;
-      }
-
       .wallet-bar {
         margin-bottom: 16px;
         display: flex;
@@ -168,24 +152,6 @@
         margin-right: 8px;
       }
 
-      .search-field {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        padding: 12px 14px;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        background: white;
-      }
-
-      .search-field input {
-        border: none;
-        outline: none;
-        font-size: 14px;
-        width: 100%;
-        font-family: inherit;
-      }
-
       .alert {
         margin-top: 16px;
         padding: 12px 14px;
@@ -199,64 +165,35 @@
         display: none;
       }
 
-      .admin-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .admin-list {
+      .delivery-grid {
         margin-top: 16px;
         display: grid;
         gap: 12px;
       }
 
-      .admin-card {
+      .delivery-card {
         border: 1px solid var(--border);
         border-radius: 16px;
         padding: 16px;
         background: white;
         display: grid;
-        gap: 10px;
+        gap: 8px;
       }
 
-      .admin-card-link {
-        display: grid;
-        gap: 10px;
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .admin-row {
+      .delivery-row {
         display: flex;
         justify-content: space-between;
         gap: 12px;
         flex-wrap: wrap;
       }
 
-      .admin-title {
+      .delivery-title {
         font-weight: 600;
       }
 
-      .admin-meta {
+      .delivery-meta {
         color: var(--text-muted);
         font-size: 13px;
-      }
-
-      .admin-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .admin-empty {
-        padding: 12px;
-        border-radius: 12px;
-        border: 1px dashed var(--border);
-        color: var(--text-muted);
-        font-size: 14px;
       }
 
       .status-pill {
@@ -268,6 +205,14 @@
         color: var(--primary);
         font-size: 12px;
         font-weight: 600;
+      }
+
+      .empty-state {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px dashed var(--border);
+        color: var(--text-muted);
+        font-size: 14px;
       }
 
       .site-footer {
@@ -296,14 +241,14 @@
 
   <body>
     <div class="page">
-      <%- include("partials/header", { activePage: "track" }) %>
+      <%- include("partials/header", { activePage: "my" }) %>
 
       <main>
         <div class="container">
           <section class="panel" id="userPanel">
             <div class="page-title">
-              <h1>Track Your Parcel</h1>
-              <p>Search by tracking ID.</p>
+              <h1>My Deliveries</h1>
+              <p>View your delivery history linked to your wallet.</p>
             </div>
 
             <div class="wallet-bar">
@@ -314,36 +259,8 @@
               <button class="btn btn-primary" id="connectButton">Connect Wallet</button>
             </div>
 
-            <form
-              class="search-field"
-              id="trackForm"
-              action="/trackdelivery"
-              method="GET"
-              data-redirect="true"
-            >
-              <input
-                type="text"
-                name="trackingId"
-                placeholder="Search tracking ID (e.g. ZAC002)"
-                required
-              />
-              <button class="btn btn-primary btn-chip" type="submit">Search</button>
-            </form>
-
             <div class="alert d-none" id="statusMessage"></div>
-          </section>
-
-          <section class="panel hidden" id="adminPanel">
-            <div class="admin-header">
-              <div>
-                <h1>Admin Dashboard</h1>
-                <p>Manage delivery requests and update statuses.</p>
-              </div>
-              <button class="btn btn-ghost btn-chip" type="button" id="adminRefresh">
-                Refresh
-              </button>
-            </div>
-            <div class="admin-list" id="adminOrders"></div>
+            <div class="delivery-grid" id="myDeliveries"></div>
           </section>
         </div>
       </main>

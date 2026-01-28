@@ -22,6 +22,10 @@ app.get("/create", (req, res) => {
   res.render("create");
 });
 
+app.get("/my-deliveries", (req, res) => {
+  res.render("my-deliveries");
+});
+
 // ---------------- ABOUT US PAGE ----------------
 app.get("/aboutus", (req, res) => {
   res.render("aboutus");
