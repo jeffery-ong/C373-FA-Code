@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
+
     <style>
       :root {
         color-scheme: light;
@@ -65,6 +66,7 @@
         flex-direction: column;
       }
 
+      /* ✅ IMPORTANT: header styling (prevents huge logo / ugly layout) */
       .site-header {
         position: sticky;
         top: 0;
@@ -392,81 +394,11 @@
         border-radius: 22px;
         padding: 24px;
         min-height: 260px;
-        position: relative;
-        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
         color: var(--text-muted);
-      }
-
-      .route-card::after {
-        content: "";
-        position: absolute;
-        width: 280px;
-        height: 280px;
-        background: radial-gradient(circle, rgba(47, 107, 255, 0.2), transparent 70%);
-        top: -120px;
-        right: -100px;
-        filter: blur(10px);
-      }
-
-      .route-marker {
-        position: absolute;
-        top: 18px;
-        left: 18px;
-      }
-
-      .route-marker.right {
-        top: auto;
-        left: auto;
-        bottom: 18px;
-        right: 18px;
-      }
-
-      .marker-chip {
-        background: white;
-        border-radius: 999px;
-        padding: 8px 14px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 8px 20px rgba(15, 26, 43, 0.08);
-      }
-
-      .marker-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--primary);
-      }
-
-      .marker-dot.green {
-        background: var(--accent);
-      }
-
-      .route-center {
-        display: grid;
-        place-items: center;
-        gap: 8px;
-      }
-
-      .route-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background: rgba(47, 107, 255, 0.14);
-        display: grid;
-        place-items: center;
-      }
-
-      .route-icon svg {
-        width: 28px;
-        height: 28px;
-        fill: var(--primary);
       }
 
       .detail-card {
@@ -514,6 +446,7 @@
         font-size: 14px;
       }
 
+      /* ✅ footer styling (to keep layout consistent) */
       footer {
         background: white;
         border-top: 1px solid var(--border);
@@ -614,20 +547,22 @@
 
         <div class="tracking-grid">
           <section class="panel">
-            <form id="trackForm" class="search-field">
+            <!-- ✅ Search ZAC001 / ZAC002 -> Express redirects to /trackdelivery/:trackingId -->
+            <form class="search-field" action="/trackdelivery" method="GET">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                 <path
                   d="M11 4a7 7 0 1 0 4.9 12l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"
                   fill="#5a6a85"
                 />
               </svg>
+
               <input
-                type="number"
-                min="1"
-                name="orderId"
-                placeholder="Search by tracking ID..."
+                type="text"
+                name="trackingId"
+                placeholder="Search tracking ID (e.g. ZAC002)"
                 required
               />
+
               <button class="btn btn-primary btn-chip" type="submit">Search</button>
             </form>
 
@@ -637,30 +572,33 @@
               <button class="btn btn-primary btn-chip" type="button">All</button>
             </div>
 
+            <!-- Your original list can stay (demo/static) -->
             <div class="tracking-list">
               <div class="tracking-item active" id="primaryTrackingItem">
                 <div class="item-icon" id="primaryItemIcon">S</div>
                 <div class="item-content">
                   <h4 id="primaryItemTitle">The pair of sneakers</h4>
-                  <p id="primaryItemId">ZAC-2024-001</p>
+                  <p id="primaryItemId">ZAC001</p>
                   <p id="primaryItemRoute">New York, NY -> Los Angeles, CA</p>
                 </div>
                 <span class="btn btn-info btn-chip" id="primaryItemStatus">On the way</span>
               </div>
+
               <div class="tracking-item">
                 <div class="item-icon">H</div>
                 <div class="item-content">
                   <h4>Winter Hoodie</h4>
-                  <p>ZAC-2024-002</p>
+                  <p>ZAC002</p>
                   <p>Chicago, IL -> Your Address</p>
                 </div>
                 <span class="btn btn-success btn-chip">Ready to receive</span>
               </div>
+
               <div class="tracking-item">
                 <div class="item-icon">E</div>
                 <div class="item-content">
                   <h4>Electronics Bundle</h4>
-                  <p>ZAC-2024-003</p>
+                  <p>ZAC003</p>
                   <p>Seattle, WA -> Miami, FL</p>
                 </div>
                 <span class="btn btn-muted btn-chip">Delivered</span>
@@ -670,26 +608,7 @@
 
           <section class="panel">
             <div class="route-card">
-              <div class="route-marker">
-                <span class="marker-chip">
-                  <span class="marker-dot"></span>
-                  Origin
-                </span>
-              </div>
-              <div class="route-marker right">
-                <span class="marker-chip">
-                  <span class="marker-dot green"></span>
-                  Destination
-                </span>
-              </div>
               <div class="route-center">
-                <div class="route-icon">
-                  <svg viewBox="0 0 24 24">
-                    <path
-                      d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"
-                    />
-                  </svg>
-                </div>
                 <strong>Interactive map showing delivery route</strong>
                 <span id="routeSummary">New York, NY -> Los Angeles, CA</span>
               </div>
@@ -699,7 +618,7 @@
               <div class="detail-icon" id="detailIcon">S</div>
               <div class="detail-info">
                 <h3 id="detailTitle">The pair of sneakers</h3>
-                <p id="detailOrderId">ZAC-2024-001</p>
+                <p id="detailOrderId">ZAC001</p>
                 <div id="trackingResult">
                   <p><strong>Sender:</strong> Not available</p>
                   <p><strong>Sender Phone:</strong> Not available</p>

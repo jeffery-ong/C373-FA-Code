@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ZacDelivery | <%= trackingId %></title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7ff;
+      --bg-soft: #eef3ff;
+      --surface: #ffffff;
+      --text: #0f1a2b;
+      --text-muted: #5a6a85;
+      --primary: #2f6bff;
+      --primary-dark: #2456d6;
+      --accent: #2bb673;
+      --border: #dde5f4;
+      --shadow: 0 18px 40px rgba(15, 26, 43, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #ffffff 0%, var(--bg) 60%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(47, 107, 255, 0.18), transparent 70%);
+      z-index: -1;
+      filter: blur(10px);
+    }
+    body::before { top: -190px; left: -140px; }
+    body::after { bottom: -220px; right: -160px; }
+
+    .page { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Header styling to match track.ejs */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      background: linear-gradient(140deg, #2f6bff, #78a8ff);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 20px rgba(47, 107, 255, 0.3);
+    }
+
+    .logo-badge svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .nav-links a { color: inherit; text-decoration: none; }
+    .nav-links a.active { color: var(--primary); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: white;
+      min-width: 260px;
+    }
+
+    .search-bar input {
+      border: none;
+      outline: none;
+      font-size: 14px;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .user-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      background: white;
+    }
+
+    .account {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .account strong { color: var(--text); font-weight: 600; }
+
+    .dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 42px 24px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex: 1;
+    }
+
+    .page-title { display: flex; flex-direction: column; gap: 8px; }
+    .page-title h1 {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      font-size: clamp(32px, 4vw, 44px);
+      letter-spacing: -0.02em;
+    }
+    .page-title p { margin: 0; color: var(--text-muted); }
+
+    .wallet-bar {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: white;
+    }
+
+    .wallet-label { color: var(--text-muted); font-size: 14px; margin-right: 8px; }
+    .wallet-bar strong { font-weight: 600; }
+
+    .alert {
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: rgba(47, 107, 255, 0.08);
+      color: #234fbd;
+    }
+    .alert.d-none { display: none; }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 12px 24px rgba(47, 107, 255, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(47, 107, 255, 0.3);
+    }
+
+    .btn-chip { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .btn-info { background: rgba(47, 107, 255, 0.15); color: var(--primary); }
+
+    .panel {
+      background: var(--surface);
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .detail-card {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    .detail-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--bg-soft);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .detail-info h3 { margin: 0 0 4px; }
+    .detail-info p { margin: 0; color: var(--text-muted); }
+
+    #trackingResult .order-card { border: none; padding: 0; background: transparent; }
+    #trackingResult p { margin: 6px 0; font-size: 14px; }
+
+    /* ✅ Footer bar styling to match your screenshot */
+    footer {
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 50px 24px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .footer-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .footer-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      color: var(--text-muted);
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .footer-list a { text-decoration: none; color: inherit; }
+
+    .footer-bottom {
+      text-align: center;
+      padding: 18px 24px 30px;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 980px) {
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .search-bar { flex: 1 1 100%; }
+      .detail-card { grid-template-columns: 1fr; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <%- include("partials/header", { activePage: "track" }) %>
+
+    <main class="dashboard">
+      <div class="page-title">
+        <h1>Tracking: <%= trackingId %></h1>
+        <p>
+          This page shows blockchain-verified delivery details for
+          <strong><%= trackingId %></strong>.
+        </p>
+
+        <p style="margin-top: 12px;">
+          <a href="/track" style="color:#2f6bff; text-decoration:none; font-weight:600;">
+            ← Back to Track
+          </a>
+        </p>
+      </div>
+
+      <div class="wallet-bar">
+        <div>
+          <span class="wallet-label">Account:</span>
+          <strong id="accountAddress">Not connected</strong>
+        </div>
+        <button class="btn btn-primary" id="connectButton">Connect Wallet</button>
+      </div>
+
+      <div class="alert d-none" id="statusMessage"></div>
+
+      <section class="panel">
+        <p style="margin-top:0; color:#5a6a85;">
+          Tip: Click <strong>Connect Wallet</strong> to load the latest status from blockchain.
+        </p>
+
+        <div class="detail-card">
+          <div class="detail-icon" id="detailIcon">Z</div>
+
+          <div class="detail-info">
+            <h3 id="detailTitle">Loading...</h3>
+            <p id="detailOrderId">Tracking ID: <%= trackingId %></p>
+
+            <div id="trackingResult">
+              <p><strong>Sender:</strong> -</p>
+              <p><strong>Sender Phone:</strong> -</p>
+              <p><strong>Receiver:</strong> -</p>
+              <p><strong>Pickup:</strong> -</p>
+              <p><strong>Drop Off:</strong> -</p>
+              <p><strong>Status:</strong> -</p>
+            </div>
+          </div>
+
+          <span class="btn btn-info btn-chip" id="detailStatus">Loading</span>
+        </div>
+      </section>
+
+      <div style="margin-top:18px;">
+        <p id="routeSummary" style="color: var(--text-muted); margin:0;"></p>
+      </div>
+    </main>
+
+    <%- include("partials/footer") %>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+  <script>
+    window.TRACKING_ID = "<%= trackingId %>";
+  </script>
+  <script src="/js/marketplace-client.js"></script>
+</body>
+</html>

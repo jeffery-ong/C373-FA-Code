@@ -1,5 +1,6 @@
 <header class="site-header">
   <div class="header-inner">
+    <!-- BRAND -->
     <div class="brand">
       <div class="logo-badge" aria-hidden="true">
         <svg viewBox="0 0 24 24">
@@ -11,22 +12,43 @@
       ZacDelivery
     </div>
 
+    <!-- NAV -->
     <nav class="nav-links">
       <a class="<%= activePage === 'home' ? 'active' : '' %>" href="/">Home</a>
       <a class="<%= activePage === 'track' ? 'active' : '' %>" href="/track">Track Parcel</a>
       <a class="<%= activePage === 'about' ? 'active' : '' %>" href="/aboutus">About Us</a>
     </nav>
 
+    <!-- ACTIONS -->
     <div class="header-actions">
-      <label class="search-bar" aria-label="Search tracking">
+      <!-- ✅ WORKING TRACK SEARCH -->
+      <form
+        class="search-bar"
+        action="/trackdelivery"
+        method="GET"
+        aria-label="Search tracking"
+      >
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
           <path
             d="M11 4a7 7 0 1 0 4.9 12l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"
             fill="#5a6a85"
           />
         </svg>
-        <input type="text" placeholder="Enter tracking ID..." />
-      </label>
+
+        <input
+          type="text"
+          name="trackingId"
+          placeholder="Enter tracking ID (e.g. ZAC003)"
+          autocomplete="off"
+          required
+        />
+
+        <button type="submit" class="btn btn-primary btn-chip">
+          Go
+        </button>
+      </form>
+
+      <!-- USER ICON -->
       <div class="user-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
           <path

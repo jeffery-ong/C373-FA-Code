@@ -21,11 +21,27 @@ app.get("/create", (req, res) => {
   res.render("create");
 });
 
-//about us page 
+// ---------------- ABOUT US PAGE ----------------
 app.get("/aboutus", (req, res) => {
   res.render("aboutus");
 });
 
+// =================================================
+// 🔍 TRACKING ROUTES (ZAC001 / ZAC002 support)
+// =================================================
+
+// Handle search form submission (?trackingId=ZAC002)
+app.get("/trackdelivery", (req, res) => {
+  const trackingId = (req.query.trackingId || "").trim().toUpperCase();
+  if (!trackingId) return res.redirect("/track");
+  return res.redirect(`/trackdelivery/${trackingId}`);
+});
+
+// Display tracking details page
+app.get("/trackdelivery/:trackingId", (req, res) => {
+  const trackingId = (req.params.trackingId || "").trim().toUpperCase();
+  res.render("trackdelivery", { trackingId });
+});
 
 // ---------------- SERVER ----------------
 app.listen(PORT, () => {

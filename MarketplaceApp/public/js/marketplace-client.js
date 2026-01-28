@@ -10,6 +10,20 @@ const adminStatusForm = document.getElementById("adminStatusForm");
 
 const ADMIN_PASSWORD = "12345678";
 
+function orderIdToTrackingId(orderId) {
+  const n = Number(orderId);
+  if (!Number.isFinite(n) || n <= 0) return "ZAC???";
+  return "ZAC" + String(n).padStart(3, "0");
+}
+
+function trackingIdToOrderId(trackingId) {
+  const t = String(trackingId || "").trim().toUpperCase();
+  const match = t.match(/^ZAC(\d{1,})$/);
+  if (!match) return null;
+  const n = Number(match[1]);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 const state = {
   web3: null,
   escrowContract: null,
@@ -64,6 +78,7 @@ async function loadContracts() {
     escrowArtifact.abi,
     escrowNetwork.address
   );
+
   state.shippingContract = new state.web3.eth.Contract(
     shippingArtifact.abi,
     shippingNetwork.address
@@ -81,7 +96,7 @@ async function loadWeb3({ requestAccounts = true } = {}) {
   });
 
   state.account = accounts[0] || null;
-  accountEl.textContent = formatAccount(state.account);
+  if (accountEl) accountEl.textContent = formatAccount(state.account);
 
   return Boolean(state.account);
 }
@@ -104,11 +119,13 @@ function renderTrackingResult(shipment) {
   if (!trackingResultEl) {
     return;
   }
+
   const badgeSource =
     shipment.senderName || shipment.receiverName || shipment.pickupLocation || "O";
   const badgeLetter = String(badgeSource).trim().charAt(0).toUpperCase() || "O";
   const statusLabel = shipment.status || "Unknown";
   const routeSummary = `${shipment.pickupLocation} -> ${shipment.dropoffLocation}`;
+  const trackingId = orderIdToTrackingId(shipment.orderId);
 
   const detailTitle = document.getElementById("detailTitle");
   const detailOrderId = document.getElementById("detailOrderId");
@@ -122,10 +139,10 @@ function renderTrackingResult(shipment) {
   const primaryItemIcon = document.getElementById("primaryItemIcon");
 
   if (detailTitle) {
-    detailTitle.textContent = `Order #${shipment.orderId}`;
+    detailTitle.textContent = `Order ${trackingId}`;
   }
   if (detailOrderId) {
-    detailOrderId.textContent = `Tracking ID: ${shipment.orderId}`;
+    detailOrderId.textContent = `Tracking ID: ${trackingId}`;
   }
   if (detailIcon) {
     detailIcon.textContent = badgeLetter;
@@ -140,11 +157,12 @@ function renderTrackingResult(shipment) {
   if (routeSummaryEl) {
     routeSummaryEl.textContent = routeSummary;
   }
+
   if (primaryItemTitle) {
-    primaryItemTitle.textContent = `Order #${shipment.orderId}`;
+    primaryItemTitle.textContent = `Order ${trackingId}`;
   }
   if (primaryItemId) {
-    primaryItemId.textContent = `Tracking ID: ${shipment.orderId}`;
+    primaryItemId.textContent = `Tracking ID: ${trackingId}`;
   }
   if (primaryItemRoute) {
     primaryItemRoute.textContent = routeSummary;
@@ -162,7 +180,8 @@ function renderTrackingResult(shipment) {
 
   trackingResultEl.innerHTML = `
     <div class="order-card">
-      <p><strong>Order ID:</strong> ${shipment.orderId}</p>
+      <p><strong>Tracking ID:</strong> ${trackingId}</p>
+      <p><strong>Order ID (on-chain):</strong> ${shipment.orderId}</p>
       <p><strong>Sender:</strong> ${shipment.senderName}</p>
       <p><strong>Sender Phone:</strong> ${shipment.senderPhone}</p>
       <p><strong>Receiver:</strong> ${shipment.receiverName}</p>
@@ -192,10 +211,39 @@ function extractRpcMessage(error) {
   return error.message || "Transaction failed.";
 }
 
+async function loadTrackingFromPage() {
+  if (!window.TRACKING_ID) return;
+  if (!state.shippingContract) return;
+
+  const orderId = trackingIdToOrderId(window.TRACKING_ID);
+  if (!orderId) {
+    setStatus("Invalid tracking ID format. Use ZAC001, ZAC002, etc.", "danger");
+    return;
+  }
+
+  setStatus(`Fetching ${window.TRACKING_ID} from blockchain...`, "info");
+
+  const shipment = await state.shippingContract.methods.getShipment(orderId).call();
+
+  renderTrackingResult({
+    orderId: shipment[0],
+    sender: shipment[1],
+    pickupLocation: shipment[2],
+    dropoffLocation: shipment[3],
+    senderName: shipment[4],
+    senderPhone: shipment[5],
+    receiverName: shipment[6],
+    status: getStatusLabel(shipment[7]),
+  });
+
+  clearStatus();
+}
+
 async function connectWallet() {
   const hasAccount = await loadWeb3({ requestAccounts: true });
   if (hasAccount) {
     await loadContracts();
+    await loadTrackingFromPage(); // ✅ auto-load on trackdelivery.ejs
   }
 }
 
@@ -237,7 +285,10 @@ async function submitDeliveryRequest(event) {
     (await state.escrowContract.methods.orderCount().call());
 
   deliveryForm.reset();
-  setStatus(`Delivery request submitted. Order ID: ${orderId}`, "success");
+  setStatus(
+    `Delivery created! Tracking ID: ${orderIdToTrackingId(orderId)}`,
+    "success"
+  );
 }
 
 async function trackParcel(event) {
@@ -251,7 +302,15 @@ async function trackParcel(event) {
   }
 
   const formData = new FormData(trackForm);
-  const orderId = formData.get("orderId");
+
+  // ✅ support searching by ZAC###
+  const trackingIdInput = formData.get("trackingId") || formData.get("orderId");
+  const orderId = trackingIdToOrderId(trackingIdInput);
+
+  if (!orderId) {
+    setStatus("Invalid tracking ID. Use format like ZAC001.", "warning");
+    return;
+  }
 
   setStatus("Fetching delivery details...", "info");
   const shipment = await state.shippingContract.methods.getShipment(orderId).call();
@@ -362,6 +421,7 @@ async function init() {
   try {
     await loadWeb3({ requestAccounts: false });
     await loadContracts();
+    await loadTrackingFromPage(); // ✅ auto-load if on trackdelivery.ejs
   } catch (error) {
     setStatus(error.message, "danger");
   }
