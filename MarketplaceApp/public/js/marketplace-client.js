@@ -4,11 +4,8 @@ const statusEl = document.getElementById("statusMessage");
 const deliveryForm = document.getElementById("deliveryForm");
 const trackForm = document.getElementById("trackForm");
 const trackingResultEl = document.getElementById("trackingResult");
-const adminLoginForm = document.getElementById("adminLoginForm");
 const adminActionsEl = document.getElementById("adminActions");
 const adminStatusForm = document.getElementById("adminStatusForm");
-
-const ADMIN_PASSWORD = "12345678";
 
 function orderIdToTrackingId(orderId) {
   const n = Number(orderId);
@@ -23,7 +20,6 @@ function trackingIdToOrderId(trackingId) {
   const n = Number(match[1]);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
-
 const state = {
   web3: null,
   escrowContract: null,
@@ -99,6 +95,34 @@ async function loadWeb3({ requestAccounts = true } = {}) {
   if (accountEl) accountEl.textContent = formatAccount(state.account);
 
   return Boolean(state.account);
+}
+
+async function ensureContracts({ requestAccounts = false } = {}) {
+  if (!state.web3 || (requestAccounts && !state.account)) {
+    await loadWeb3({ requestAccounts });
+  }
+
+  if (!state.escrowContract || !state.shippingContract) {
+    await loadContracts();
+  }
+}
+
+async function updateAdminAccess() {
+  if (!adminActionsEl) {
+    return;
+  }
+
+  if (!state.shippingContract || !state.account) {
+    adminActionsEl.classList.remove("show");
+    return;
+  }
+
+  try {
+    const isAdmin = await state.shippingContract.methods.admins(state.account).call();
+    adminActionsEl.classList.toggle("show", Boolean(isAdmin));
+  } catch (error) {
+    adminActionsEl.classList.remove("show");
+  }
 }
 
 function getStatusLabel(statusValue) {
@@ -240,11 +264,9 @@ async function loadTrackingFromPage() {
 }
 
 async function connectWallet() {
-  const hasAccount = await loadWeb3({ requestAccounts: true });
-  if (hasAccount) {
-    await loadContracts();
-    await loadTrackingFromPage(); // ✅ auto-load on trackdelivery.ejs
-  }
+  await ensureContracts({ requestAccounts: true });
+  await updateAdminAccess();
+  await loadTrackingFromPage();
 }
 
 async function submitDeliveryRequest(event) {
@@ -296,10 +318,7 @@ async function trackParcel(event) {
     return;
   }
   event.preventDefault();
-  if (!state.shippingContract) {
-    setStatus("Connect to the blockchain first.", "warning");
-    return;
-  }
+  await ensureContracts({ requestAccounts: false });
 
   const formData = new FormData(trackForm);
 
@@ -359,24 +378,6 @@ async function init() {
     });
   }
 
-  if (adminLoginForm) {
-    adminLoginForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const formData = new FormData(adminLoginForm);
-      const password = formData.get("adminPassword");
-      if (password !== ADMIN_PASSWORD) {
-        setStatus("Invalid admin password.", "danger");
-        return;
-      }
-
-      if (adminActionsEl) {
-        adminActionsEl.classList.add("show");
-      }
-      adminLoginForm.reset();
-      setStatus("Admin actions unlocked.", "success");
-    });
-  }
-
   if (adminStatusForm) {
     adminStatusForm.addEventListener("click", (event) => {
       const button = event.target.closest("button[data-admin]");
@@ -419,9 +420,9 @@ async function init() {
   }
 
   try {
-    await loadWeb3({ requestAccounts: false });
-    await loadContracts();
-    await loadTrackingFromPage(); // ✅ auto-load if on trackdelivery.ejs
+    await ensureContracts({ requestAccounts: false });
+    await updateAdminAccess();
+    await loadTrackingFromPage();
   } catch (error) {
     setStatus(error.message, "danger");
   }

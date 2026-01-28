@@ -52,7 +52,7 @@
   "sourceMap": "62:367:0:-:0;;;;;;;110:10;62:367;;-1:-1:-1;;;;;;62:367:0;110:10;62:367;;;;;;;;;;;;;",
   "deployedSourceMap": "62:367:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;62:367:0;;;;;;-1:-1:-1;;;;;62:367:0;213:10;:19;62:367;;;;;;;;;;;-1:-1:-1;;;62:367:0;;;;;;;;;;;;;;;;;-1:-1:-1;;;62:367:0;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;62:367:0;;;;;;;;;;;;;;;;;;;;;;;;125:36;62:367;;;;;;;",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.18; \r\n\r\ncontract Migrations {\r\n  address public owner = msg.sender;\r\n  uint public last_completed_migration;\r\n\r\n  modifier restricted() {\r\n    require(\r\n      msg.sender == owner,\r\n      \"This function is restricted to the contract's owner\"\r\n    );\r\n    _;\r\n  }\r\n\r\n  function setCompleted(uint completed) public restricted {\r\n    last_completed_migration = completed;\r\n  }\r\n}\r\n",
-  "sourcePath": "C:\\Users\\24013711\\fake_delivery\\C373-FA-Code\\contracts\\Migrations.sol",
+  "sourcePath": "C:\\Users\\24016580\\Downloads\\C373 FA Code\\contracts\\Migrations.sol",
   "ast": {
     "absolutePath": "project:/contracts/Migrations.sol",
     "exportedSymbols": {
@@ -461,12 +461,21 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x6f6Ae912c5B1BEb88ca65C65f49581B1E07a405E",
-      "transactionHash": "0x81338f7bb04c1f7fa5636513aa862fdebcd7bf906201319823bf39f97a410b48"
+<<<<<<< Updated upstream
+      "address": "0x1fCAC8af4A5640e88f627AAb722F4c614cF02701",
+      "transactionHash": "0xac99049570a931b66cfea4074fdddb5cba835b9af5b26c8bb3e30cff33c04192"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-01-28T06:58:19.457Z",
+  "updatedAt": "2026-01-22T16:15:23.426Z",
+=======
+      "address": "0x3B37778C4EcfA849072bBAA847224393C76946fC",
+      "transactionHash": "0xd8e4825dbc10b176aeee6e19ca8f5c6b370672ad479485328bf3e69e2982bbab"
+    }
+  },
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2026-01-22T08:41:08.543Z",
+>>>>>>> Stashed changes
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

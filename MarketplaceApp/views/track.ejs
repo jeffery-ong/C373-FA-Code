@@ -292,6 +292,47 @@
         gap: 24px;
       }
 
+      #adminActions {
+        display: none;
+      }
+
+      #adminActions.show {
+        display: block;
+      }
+
+      .admin-panel {
+        margin-top: 24px;
+      }
+
+      .admin-form {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .admin-form label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+
+      .admin-form input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        font-family: inherit;
+        font-size: 14px;
+      }
+
+      .admin-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
       .panel {
         background: var(--surface);
         border-radius: 22px;
@@ -632,6 +673,25 @@
             </div>
           </section>
         </div>
+
+        <section class="panel admin-panel" id="adminActions">
+          <h3>Admin Controls</h3>
+          <p>Update delivery status for orders you manage.</p>
+          <form class="admin-form" id="adminStatusForm">
+            <div>
+              <label for="adminOrderId">Order ID</label>
+              <input type="number" id="adminOrderId" name="orderId" min="1" required />
+            </div>
+            <div class="admin-actions">
+              <button class="btn btn-primary" type="button" data-admin="collect">
+                Mark as Collected
+              </button>
+              <button class="btn btn-ghost" type="button" data-admin="deliver">
+                Mark as Delivered
+              </button>
+            </div>
+          </form>
+        </section>
       </main>
 
       <%- include("partials/footer") %>

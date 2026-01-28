@@ -23,14 +23,17 @@ contract ShippingTracking {
 
     address public owner;
     address public escrow;
+    mapping(address => bool) public admins;
 
     event ShipmentCreated(uint orderId, address sender);
     event StatusUpdated(uint orderId, DeliveryStatus status);
+    event AdminUpdated(address admin, bool enabled);
 
     constructor(address escrowAddress) {
         require(escrowAddress != address(0), "Invalid escrow address");
         owner = msg.sender;
         escrow = escrowAddress;
+        admins[msg.sender] = true;
     }
 
     modifier onlyOwner() {
@@ -38,9 +41,20 @@ contract ShippingTracking {
         _;
     }
 
+    modifier onlyAdmin() {
+        require(msg.sender == owner || admins[msg.sender], "Only admin");
+        _;
+    }
+
     modifier onlyEscrow() {
         require(msg.sender == escrow, "Only escrow contract");
         _;
+    }
+
+    function setAdmin(address admin, bool enabled) external onlyOwner {
+        require(admin != address(0), "Invalid admin");
+        admins[admin] = enabled;
+        emit AdminUpdated(admin, enabled);
     }
 
     function createShipment(
@@ -68,7 +82,7 @@ contract ShippingTracking {
         emit ShipmentCreated(orderId, sender);
     }
 
-    function markCollected(uint orderId) external onlyOwner {
+    function markCollected(uint orderId) external onlyAdmin {
         Shipment storage shipment = shipments[orderId];
         require(shipment.orderId != 0, "Shipment not found");
         require(shipment.status == DeliveryStatus.NotCollected, "Invalid status");
@@ -77,7 +91,7 @@ contract ShippingTracking {
         emit StatusUpdated(orderId, shipment.status);
     }
 
-    function markDelivered(uint orderId) external onlyOwner {
+    function markDelivered(uint orderId) external onlyAdmin {
         Shipment storage shipment = shipments[orderId];
         require(shipment.orderId != 0, "Shipment not found");
         require(shipment.status != DeliveryStatus.Delivered, "Already delivered");

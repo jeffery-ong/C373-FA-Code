@@ -1,8 +1,73 @@
 {
-  "contractName": "IShippingTracking",
+  "contractName": "PaymentEscrow",
   "abi": [
     {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
       "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "orderId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "OrderCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "shippingContract",
+          "type": "address"
+        }
+      ],
+      "name": "ShippingContractUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "orderCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "orders",
+      "outputs": [
         {
           "internalType": "uint256",
           "name": "orderId",
@@ -10,9 +75,67 @@
         },
         {
           "internalType": "address",
-          "name": "sender",
+          "name": "buyer",
           "type": "address"
         },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "paid",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [],
+      "name": "shippingContract",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_shippingContract",
+          "type": "address"
+        }
+      ],
+      "name": "setShippingContract",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "string",
           "name": "pickupLocation",
@@ -39,22 +162,62 @@
           "type": "string"
         }
       ],
-      "name": "createShipment",
+      "name": "createDeliveryOrder",
       "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "stateMutability": "payable",
+      "type": "function",
+      "payable": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_orderId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getOrder",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"pickupLocation\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"dropoffLocation\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"senderName\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"senderPhone\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"receiverName\",\"type\":\"string\"}],\"name\":\"createShipment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/PaymentEscrow.sol\":\"IShippingTracking\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"project:/contracts/PaymentEscrow.sol\":{\"keccak256\":\"0xc936d82dba241f565f6eab2a7fe1ade8656df0c69404764e585c4b771ffab3bc\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://db88d7e4486bb8acee9348d7ef8ff36e253681044bcac49e05a4855b6bf583c1\",\"dweb:/ipfs/QmTT2HznVMKqiV8zYttj9SVpHCMidnQyRTYuvGDebPSUAy\"]}},\"version\":1}",
-  "bytecode": "0x",
-  "deployedBytecode": "0x",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"buyer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"OrderCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"shippingContract\",\"type\":\"address\"}],\"name\":\"ShippingContractUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"pickupLocation\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"dropoffLocation\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"senderName\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"senderPhone\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"receiverName\",\"type\":\"string\"}],\"name\":\"createDeliveryOrder\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_orderId\",\"type\":\"uint256\"}],\"name\":\"getOrder\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"orderCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"orders\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"buyer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"paid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_shippingContract\",\"type\":\"address\"}],\"name\":\"setShippingContract\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"shippingContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/PaymentEscrow.sol\":\"PaymentEscrow\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"project:/contracts/PaymentEscrow.sol\":{\"keccak256\":\"0xc936d82dba241f565f6eab2a7fe1ade8656df0c69404764e585c4b771ffab3bc\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://db88d7e4486bb8acee9348d7ef8ff36e253681044bcac49e05a4855b6bf583c1\",\"dweb:/ipfs/QmTT2HznVMKqiV8zYttj9SVpHCMidnQyRTYuvGDebPSUAy\"]}},\"version\":1}",
+  "bytecode": "0x6080806040523461002c5760008055600280546001600160a01b031916331790556106bf90816100328239f35b600080fdfe608080604052600436101561001357600080fd5b600090813560e01c9081632453ffa8146105e957508063555e4bd8146105c05780638da5cb5b14610597578063a85c38ef14610533578063d09ef241146104b2578063d632e9d51461016a5763f50f00711461006e57600080fd5b34610167576020366003190112610167576004356001600160a01b0381811691829003610163576002541633036101315780156100ec576020817f705107bc72f9e90318648173ed609c51575a7b5583f7f39f882d8e746bd4de2a926bffffffffffffffffffffffff60a01b6003541617600355604051908152a180f35b60405162461bcd60e51b815260206004820152601960248201527f496e76616c6964207368697070696e6720636f6e7472616374000000000000006044820152606490fd5b60405162461bcd60e51b815260206004820152600a60248201526927b7363c9037bbb732b960b11b6044820152606490fd5b8280fd5b80fd5b5060a03660031901126101675760043567ffffffffffffffff81116104ae57610197903690600401610603565b919060243567ffffffffffffffff8111610163576101b9903690600401610603565b919060443567ffffffffffffffff81116104aa576101db903690600401610603565b95909160643567ffffffffffffffff81116104a6576101fe903690600401610603565b979060843567ffffffffffffffff81116104a257610220903690600401610603565b9091341561046a576003546001600160a01b0316156104255789549a6000198c146104115760018b9c9b9a9b01808b55600360405161025e81610636565b8281528c60208201338152604080840192348452606085019660018852815260016020522092518355600183019060018060a01b039051166bffffffffffffffffffffffff60a01b825416179055516002820155019051151560ff8019835416911617905560018060a01b0360035416978a5495893b1561040d578b976040519d8e9c8d9b8c9a63636305ed60e11b8c5260048c01523360248c015260448b0160e0905260e48b019061031092610668565b906003198a83030160648b015261032692610668565b9060031988830301608489015261033c92610668565b906003198683030160a487015261035292610668565b906003198483030160c485015261036892610668565b03925af18015610402576103d6575b50808080803460018060a01b036002541682f1156103ca577f28eb86fd03c9bd96a8a83e4a46ab2ad257b70cea893d98ad6d482e96aa25fad060608254604051908152336020820152346040820152a180f35b604051903d90823e3d90fd5b67ffffffffffffffff81116103ee5760405238610377565b634e487b7160e01b82526041600452602482fd5b6040513d84823e3d90fd5b8b80fd5b634e487b7160e01b8b52601160045260248bfd5b60405162461bcd60e51b815260206004820152601960248201527f5368697070696e6720636f6e7472616374206e6f7420736574000000000000006044820152606490fd5b60405162461bcd60e51b815260206004820152601060248201526f14185e5b595b9d081c995c5d5a5c995960821b6044820152606490fd5b8880fd5b8680fd5b8480fd5b5080fd5b5034610167576020366003190112610167576040906004358152600160205220604051906104df82610636565b805480835260018201546001600160a01b031660208085018290526002840154604080870182905260039095015460ff16151560609687018190528551948552918401929092529282015291820152608090f35b503461016757602036600319011261016757600435815260016020818152604092839020805492810154600282015460039092015485519485526001600160a01b03909116928401929092529282019290925260ff90911615156060820152608090f35b50346101675780600319360112610167576002546040516001600160a01b039091168152602090f35b50346101675780600319360112610167576003546040516001600160a01b039091168152602090f35b9050346104ae57816003193601126104ae57602091548152f35b9181601f840112156106315782359167ffffffffffffffff8311610631576020838186019501011161063157565b600080fd5b6080810190811067ffffffffffffffff82111761065257604052565b634e487b7160e01b600052604160045260246000fd5b908060209392818452848401376000828201840152601f01601f191601019056fea264697066735822122027d175712f1c7213c05880e5469ebf8893f64205c7311a49a95e6d1098b9ce0264736f6c63430008130033",
+  "deployedBytecode": "0x608080604052600436101561001357600080fd5b600090813560e01c9081632453ffa8146105e957508063555e4bd8146105c05780638da5cb5b14610597578063a85c38ef14610533578063d09ef241146104b2578063d632e9d51461016a5763f50f00711461006e57600080fd5b34610167576020366003190112610167576004356001600160a01b0381811691829003610163576002541633036101315780156100ec576020817f705107bc72f9e90318648173ed609c51575a7b5583f7f39f882d8e746bd4de2a926bffffffffffffffffffffffff60a01b6003541617600355604051908152a180f35b60405162461bcd60e51b815260206004820152601960248201527f496e76616c6964207368697070696e6720636f6e7472616374000000000000006044820152606490fd5b60405162461bcd60e51b815260206004820152600a60248201526927b7363c9037bbb732b960b11b6044820152606490fd5b8280fd5b80fd5b5060a03660031901126101675760043567ffffffffffffffff81116104ae57610197903690600401610603565b919060243567ffffffffffffffff8111610163576101b9903690600401610603565b919060443567ffffffffffffffff81116104aa576101db903690600401610603565b95909160643567ffffffffffffffff81116104a6576101fe903690600401610603565b979060843567ffffffffffffffff81116104a257610220903690600401610603565b9091341561046a576003546001600160a01b0316156104255789549a6000198c146104115760018b9c9b9a9b01808b55600360405161025e81610636565b8281528c60208201338152604080840192348452606085019660018852815260016020522092518355600183019060018060a01b039051166bffffffffffffffffffffffff60a01b825416179055516002820155019051151560ff8019835416911617905560018060a01b0360035416978a5495893b1561040d578b976040519d8e9c8d9b8c9a63636305ed60e11b8c5260048c01523360248c015260448b0160e0905260e48b019061031092610668565b906003198a83030160648b015261032692610668565b9060031988830301608489015261033c92610668565b906003198683030160a487015261035292610668565b906003198483030160c485015261036892610668565b03925af18015610402576103d6575b50808080803460018060a01b036002541682f1156103ca577f28eb86fd03c9bd96a8a83e4a46ab2ad257b70cea893d98ad6d482e96aa25fad060608254604051908152336020820152346040820152a180f35b604051903d90823e3d90fd5b67ffffffffffffffff81116103ee5760405238610377565b634e487b7160e01b82526041600452602482fd5b6040513d84823e3d90fd5b8b80fd5b634e487b7160e01b8b52601160045260248bfd5b60405162461bcd60e51b815260206004820152601960248201527f5368697070696e6720636f6e7472616374206e6f7420736574000000000000006044820152606490fd5b60405162461bcd60e51b815260206004820152601060248201526f14185e5b595b9d081c995c5d5a5c995960821b6044820152606490fd5b8880fd5b8680fd5b8480fd5b5080fd5b5034610167576020366003190112610167576040906004358152600160205220604051906104df82610636565b805480835260018201546001600160a01b031660208085018290526002840154604080870182905260039095015460ff16151560609687018190528551948552918401929092529282015291820152608090f35b503461016757602036600319011261016757600435815260016020818152604092839020805492810154600282015460039092015485519485526001600160a01b03909116928401929092529282019290925260ff90911615156060820152608090f35b50346101675780600319360112610167576002546040516001600160a01b039091168152602090f35b50346101675780600319360112610167576003546040516001600160a01b039091168152602090f35b9050346104ae57816003193601126104ae57602091548152f35b9181601f840112156106315782359167ffffffffffffffff8311610631576020838186019501011161063157565b600080fd5b6080810190811067ffffffffffffffff82111761065257604052565b634e487b7160e01b600052604160045260246000fd5b908060209392818452848401376000828201840152601f01601f191601019056fea264697066735822122027d175712f1c7213c05880e5469ebf8893f64205c7311a49a95e6d1098b9ce0264736f6c63430008130033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
-  "sourceMap": "",
-  "deployedSourceMap": "",
+  "sourceMap": "387:2311:1:-:0;;;;;;;442:1;387:2311;;887:18;387:2311;;-1:-1:-1;;;;;;387:2311:1;895:10;387:2311;;;;;;;;;;;;;",
+  "deployedSourceMap": "387:2311:1:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;387:2311:1;;;;;;-1:-1:-1;;;;;387:2311:1;;;;;;;;;975:5;387:2311;;961:10;:19;387:2311;;1117:31;;387:2311;;;;1241:42;387:2311;;;;;;;;;;;;;;;1241:42;387:2311;;;;;-1:-1:-1;;;387:2311:1;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;387:2311:1;;;;;;;;;;;;-1:-1:-1;;;387:2311:1;;;;;;;;;;;;;;;-1:-1:-1;387:2311:1;;-1:-1:-1;;387:2311:1;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;:::i;:::-;1627:9;;;:13;387:2311;;;;-1:-1:-1;;;;;387:2311:1;1680:30;387:2311;;;;;-1:-1:-1;;387:2311:1;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;1799:109;387:2311;1799:109;;1844:10;387:2311;;;1799:109;;;1627:9;;387:2311;;;1799:109;;387:2311;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1921:248;;;;;;387:2311;;;;;;;;;;;;;;1921:248;;387:2311;1921:248;;387:2311;1844:10;387:2311;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;:::i;:::-;1921:248;;;;;;;;;;387:2311;1627:9;;;;;;387:2311;;;;;;;;2182:34;;;;;2234:47;387:2311;;;;;;;;1844:10;387:2311;;;;1627:9;387:2311;;;;2234:47;387:2311;;2182:34;387:2311;;;;;;;;;;1921:248;387:2311;;;;;;;1921:248;;;387:2311;-1:-1:-1;;;387:2311:1;;;;;;;;1921:248;387:2311;;;;;;;;;1921:248;387:2311;;;;-1:-1:-1;;;387:2311:1;;;;;;;;;;;-1:-1:-1;;;387:2311:1;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;387:2311:1;;;;;;;;;;;;-1:-1:-1;;;387:2311:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;387:2311:1;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;-1:-1:-1;;;;;387:2311:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;387:2311:1;;;;;;;;;;;;;;;;;;;;570:36;;;387:2311;570:36;;;387:2311;;570:36;;;387:2311;;;;;;-1:-1:-1;;;;;387:2311:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;615:20;387:2311;;;-1:-1:-1;;;;;387:2311:1;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;387:2311:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;:::-;;;;;;;;;;;;;;;;;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;387:2311:1;;;;;;;;-1:-1:-1;;387:2311:1;;;;:::o",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\ninterface IShippingTracking {\r\n    function createShipment(\r\n        uint orderId,\r\n        address sender,\r\n        string calldata pickupLocation,\r\n        string calldata dropoffLocation,\r\n        string calldata senderName,\r\n        string calldata senderPhone,\r\n        string calldata receiverName\r\n    ) external;\r\n}\r\n\r\ncontract PaymentEscrow {\r\n    uint public orderCount = 0;\r\n\r\n    struct Order {\r\n        uint orderId;\r\n        address buyer;\r\n        uint amount;\r\n        bool paid;\r\n    }\r\n\r\n    mapping(uint => Order) public orders;\r\n\r\n    address public owner;\r\n    address public shippingContract;\r\n\r\n    // ---------------- EVENTS ----------------\r\n    event OrderCreated(uint orderId, address buyer, uint amount);\r\n    event ShippingContractUpdated(address shippingContract);\r\n\r\n    constructor() {\r\n        owner = msg.sender;\r\n    }\r\n\r\n    modifier onlyOwner() {\r\n        require(msg.sender == owner, \"Only owner\");\r\n        _;\r\n    }\r\n\r\n    function setShippingContract(address _shippingContract) external onlyOwner {\r\n        require(_shippingContract != address(0), \"Invalid shipping contract\");\r\n        shippingContract = _shippingContract;\r\n        emit ShippingContractUpdated(_shippingContract);\r\n    }\r\n\r\n    // ---------------- DELIVERY REQUEST ----------------\r\n    function createDeliveryOrder(\r\n        string calldata pickupLocation,\r\n        string calldata dropoffLocation,\r\n        string calldata senderName,\r\n        string calldata senderPhone,\r\n        string calldata receiverName\r\n    ) external payable {\r\n        require(msg.value > 0, \"Payment required\");\r\n        require(shippingContract != address(0), \"Shipping contract not set\");\r\n\r\n        orderCount++;\r\n\r\n        orders[orderCount] = Order(\r\n            orderCount,\r\n            msg.sender,\r\n            msg.value,\r\n            true\r\n        );\r\n\r\n        IShippingTracking(shippingContract).createShipment(\r\n            orderCount,\r\n            msg.sender,\r\n            pickupLocation,\r\n            dropoffLocation,\r\n            senderName,\r\n            senderPhone,\r\n            receiverName\r\n        );\r\n\r\n        payable(owner).transfer(msg.value);\r\n\r\n        emit OrderCreated(orderCount, msg.sender, msg.value);\r\n    }\r\n\r\n    // ---------------- GETTER ----------------\r\n    function getOrder(uint _orderId)\r\n        external\r\n        view\r\n        returns (\r\n            uint,\r\n            address,\r\n            uint,\r\n            bool\r\n        )\r\n    {\r\n        Order memory o = orders[_orderId];\r\n        return (\r\n            o.orderId,\r\n            o.buyer,\r\n            o.amount,\r\n            o.paid\r\n        );\r\n    }\r\n}\r\n",
+<<<<<<< Updated upstream
+  "sourcePath": "C:\\Users\\24016580\\Downloads\\C373 FA Code\\contracts\\PaymentEscrow.sol",
+=======
   "sourcePath": "C:\\Users\\24013711\\fake_delivery\\C373-FA-Code\\contracts\\PaymentEscrow.sol",
+>>>>>>> Stashed changes
   "ast": {
     "absolutePath": "project:/contracts/PaymentEscrow.sol",
     "exportedSymbols": {
@@ -2873,9 +3036,122 @@
     "name": "solc",
     "version": "0.8.19+commit.7dd6d404.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "5777": {
+      "events": {
+        "0xf9e17940e547201709f9aaacdec8ab3566601c60d8f5affb54f74b79b0b50b13": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "orderId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "buyer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "seller",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "OrderCreated",
+          "type": "event"
+        },
+        "0xe21fe02c1589242b30be2057f54fd54b7ddc463695d19ffdb54f9ebb0584f24a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "orderId",
+              "type": "uint256"
+            }
+          ],
+          "name": "OrderDelivered",
+          "type": "event"
+        },
+        "0xe3ce5f36666aec295b2ed1a858caf4782066e5e8c1a5a5da7ba6551b14fcfdcb": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "orderId",
+              "type": "uint256"
+            }
+          ],
+          "name": "OrderShipped",
+          "type": "event"
+        },
+        "0x705107bc72f9e90318648173ed609c51575a7b5583f7f39f882d8e746bd4de2a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "shippingContract",
+              "type": "address"
+            }
+          ],
+          "name": "ShippingContractUpdated",
+          "type": "event"
+        },
+        "0x28eb86fd03c9bd96a8a83e4a46ab2ad257b70cea893d98ad6d482e96aa25fad0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "orderId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "buyer",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "OrderCreated",
+          "type": "event"
+        }
+      },
+      "links": {},
+<<<<<<< Updated upstream
+      "address": "0x5034c081e1A3045A14A2097bb3D98c1Dd6916cA6",
+      "transactionHash": "0x707d8323c02d25f9464260a7d66b2082e204f6295fea2f7d06b2a85e3e22a3e2"
+    }
+  },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-01-28T06:58:11.728Z",
+  "updatedAt": "2026-01-22T16:15:23.418Z",
+=======
+      "address": "0xe210b1E097a7eb3dfD8f19ed58B08cea03DEF35f",
+      "transactionHash": "0xe1bbca845188b234a9ea74b69eb2248227de50ac9f63762f8c3d3a1312d51828"
+    }
+  },
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2026-01-22T08:41:08.531Z",
+>>>>>>> Stashed changes
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},
