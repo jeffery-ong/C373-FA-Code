@@ -4,6 +4,17 @@ const statusEl = document.getElementById("statusMessage");
 const deliveryForm = document.getElementById("deliveryForm");
 const trackForm = document.getElementById("trackForm");
 const trackingResultEl = document.getElementById("trackingResult");
+const adminPanelEl = document.getElementById("adminPanel");
+const adminOrdersEl = document.getElementById("adminOrders");
+const adminRefreshBtn = document.getElementById("adminRefresh");
+const userPanelEl = document.getElementById("userPanel");
+
+const ADMIN_ACCOUNTS = new Set([
+  "0xe2d15dd1228d095a7327bbf947fe80c03d87d9e8",
+  "0x878cf562c8dc9542c06d23e9a4cf2006b2241b18",
+  "0xd73b950c62553cab7c90aae8549dbf6c4a099ed4",
+  "0xa8f1ebc83dff1984e5281c74aebe969073ac94e3",
+]);
 
 const TRACKING_STORAGE_KEY = "zacTrackingMap";
 
@@ -125,6 +136,24 @@ function formatAccount(address) {
     return "Not connected";
   }
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+function isAdminAddress(address) {
+  if (!address) return false;
+  return ADMIN_ACCOUNTS.has(address.toLowerCase());
+}
+
+async function checkAdminAccess() {
+  if (!state.account) return false;
+  if (isAdminAddress(state.account)) return true;
+  if (!state.shippingContract) return false;
+  try {
+    return Boolean(
+      await state.shippingContract.methods.admins(state.account).call()
+    );
+  } catch (error) {
+    return false;
+  }
 }
 
 async function loadArtifact(path) {
@@ -290,6 +319,144 @@ function renderTrackingResult(shipment) {
   });
 }
 
+function setAdminView(isAdmin) {
+  if (adminPanelEl) {
+    adminPanelEl.classList.toggle("hidden", !isAdmin);
+  }
+  if (userPanelEl) {
+    userPanelEl.classList.toggle("hidden", isAdmin);
+  }
+
+  const adminHiddenLinks = document.querySelectorAll("[data-admin-hidden='true']");
+  adminHiddenLinks.forEach((link) => {
+    link.style.display = isAdmin ? "none" : "";
+  });
+
+  const adminOnlyLinks = document.querySelectorAll("[data-admin-only='true']");
+  adminOnlyLinks.forEach((link) => {
+    link.style.display = isAdmin ? "" : "none";
+  });
+}
+
+function renderAdminOrders(orders) {
+  if (!adminOrdersEl) {
+    return;
+  }
+
+  if (!orders.length) {
+    adminOrdersEl.innerHTML =
+      '<div class="admin-empty">No delivery requests yet.</div>';
+    return;
+  }
+
+  adminOrdersEl.innerHTML = orders
+    .map((order) => {
+      const trackingId = orderIdToTrackingId(order.orderId);
+      return `
+        <article class="admin-card">
+          <div class="admin-row">
+            <div>
+              <div class="admin-title">Order ${trackingId}</div>
+              <div class="admin-meta">Order ID: ${order.orderId}</div>
+            </div>
+            <span class="status-pill">${order.status}</span>
+          </div>
+          <div class="admin-meta">
+            ${order.pickupLocation} → ${order.dropoffLocation}
+          </div>
+          <div class="admin-meta">
+            Sender: ${order.senderName} (${order.senderPhone}) · Receiver: ${order.receiverName}
+          </div>
+          <div class="admin-actions">
+            <button class="btn btn-ghost btn-chip" data-admin-action="collect" data-order-id="${order.orderId}">
+              Mark Collected / On Delivery
+            </button>
+            <button class="btn btn-primary btn-chip" data-admin-action="deliver" data-order-id="${order.orderId}">
+              Mark Delivered
+            </button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function loadAdminOrders() {
+  if (!adminOrdersEl) {
+    return;
+  }
+
+  adminOrdersEl.innerHTML = '<div class="admin-empty">Loading...</div>';
+
+  const orderCount = Number(
+    await state.escrowContract.methods.orderCount().call()
+  );
+
+  if (!Number.isFinite(orderCount) || orderCount <= 0) {
+    renderAdminOrders([]);
+    return;
+  }
+
+  const orders = [];
+  for (let i = 1; i <= orderCount; i += 1) {
+    try {
+      const shipment = await state.shippingContract.methods.getShipment(i).call();
+      orders.push({
+        orderId: Number(shipment[0]),
+        sender: shipment[1],
+        pickupLocation: shipment[2],
+        dropoffLocation: shipment[3],
+        senderName: shipment[4],
+        senderPhone: shipment[5],
+        receiverName: shipment[6],
+        status: getStatusLabel(shipment[7]),
+      });
+    } catch (error) {
+      continue;
+    }
+  }
+
+  renderAdminOrders(orders);
+}
+
+async function handleAdminAction(orderId, action) {
+  if (!state.shippingContract || !state.account) {
+    setStatus("Connect your wallet first.", "warning");
+    return;
+  }
+
+  if (!orderId) {
+    return;
+  }
+
+  try {
+    if (action === "collect") {
+      setStatus("Updating status to collected/on delivery...", "info");
+      await state.shippingContract.methods
+        .markCollected(orderId)
+        .send({ from: state.account, gas: 200000 });
+    } else if (action === "deliver") {
+      setStatus("Updating status to delivered...", "info");
+      await state.shippingContract.methods
+        .markDelivered(orderId)
+        .send({ from: state.account, gas: 200000 });
+    }
+
+    setStatus("Status updated.", "success");
+    await loadAdminOrders();
+  } catch (error) {
+    setStatus(extractRpcMessage(error), "danger");
+  }
+}
+
+async function updateAdminPanel() {
+  const isAdmin = await checkAdminAccess();
+  setAdminView(isAdmin);
+  if (isAdmin && adminPanelEl) {
+    await loadAdminOrders();
+  }
+}
+
 function extractRpcMessage(error) {
   if (!error) {
     return "Transaction failed.";
@@ -346,6 +513,7 @@ async function loadTrackingFromPage() {
 async function connectWallet() {
   await ensureContracts({ requestAccounts: true });
   await loadTrackingFromPage();
+  await updateAdminPanel();
 }
 
 async function submitDeliveryRequest(event) {
@@ -570,6 +738,12 @@ async function init() {
     return;
   }
 
+  try {
+    await loadWeb3({ requestAccounts: false });
+  } catch (error) {
+    // Ignore missing accounts until user connects.
+  }
+
   if (connectBtn) {
     connectBtn.addEventListener("click", () => {
       connectWallet().catch((error) => {
@@ -584,6 +758,33 @@ async function init() {
         setStatus(extractRpcMessage(error), "danger");
       });
     });
+  }
+
+  if (adminOrdersEl) {
+    adminOrdersEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-admin-action]");
+      if (!button) {
+        return;
+      }
+      const orderId = button.dataset.orderId;
+      const action = button.dataset.adminAction;
+      handleAdminAction(orderId, action);
+    });
+  }
+
+  if (adminRefreshBtn) {
+    adminRefreshBtn.addEventListener("click", () => {
+      loadAdminOrders().catch((error) => {
+        setStatus(extractRpcMessage(error), "danger");
+      });
+    });
+  }
+
+  try {
+    await ensureContracts({ requestAccounts: false });
+    await updateAdminPanel();
+  } catch (error) {
+    // Only show errors when admin actually connects.
   }
 
   setStatus("Connect your wallet to load blockchain data.", "info");

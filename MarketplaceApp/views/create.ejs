@@ -151,6 +151,10 @@
         color: var(--text-muted);
       }
 
+      .hidden {
+        display: none;
+      }
+
       .wallet-bar {
         margin-top: 18px;
         display: flex;
@@ -214,6 +218,70 @@
         display: none;
       }
 
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .admin-list {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .admin-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        background: white;
+        display: grid;
+        gap: 10px;
+      }
+
+      .admin-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .admin-title {
+        font-weight: 600;
+      }
+
+      .admin-meta {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .admin-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .admin-empty {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px dashed var(--border);
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(47, 107, 255, 0.12);
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
       .site-footer {
         border-top: 1px solid var(--border);
         background: white;
@@ -243,7 +311,7 @@
 
       <main>
         <div class="container">
-          <section class="panel">
+          <section class="panel" id="userPanel">
             <h1>Create Delivery</h1>
             <p>Submit a delivery request through the escrow contract.</p>
 
@@ -289,6 +357,19 @@
             </form>
 
             <div class="alert d-none" id="statusMessage"></div>
+          </section>
+
+          <section class="panel hidden" id="adminPanel">
+            <div class="admin-header">
+              <div>
+                <h1>Admin Dashboard</h1>
+                <p>Manage delivery requests and update statuses.</p>
+              </div>
+              <button class="btn btn-ghost btn-chip" type="button" id="adminRefresh">
+                Refresh
+              </button>
+            </div>
+            <div class="admin-list" id="adminOrders"></div>
           </section>
         </div>
       </main>

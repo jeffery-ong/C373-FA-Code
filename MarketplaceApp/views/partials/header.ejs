@@ -5,21 +5,39 @@
     </div>
 
     <nav class="nav-links">
-      <a class="<%= activePage === 'home' ? 'active' : '' %>" href="/">Home</a>
-      <a class="<%= activePage === 'track' ? 'active' : '' %>" href="/track">Track Parcel</a>
-      <a class="<%= activePage === 'create' ? 'active' : '' %>" href="/create">Create</a>
-      <a class="<%= activePage === 'about' ? 'active' : '' %>" href="/aboutus">About</a>
+      <a
+        class="<%= activePage === 'home' ? 'active' : '' %>"
+        href="/"
+        data-admin-hidden="true"
+      >
+        Home
+      </a>
+      <a
+        class="<%= activePage === 'track' ? 'active' : '' %>"
+        href="/track"
+        data-admin-hidden="true"
+      >
+        Track Parcel
+      </a>
+      <a
+        class="<%= activePage === 'create' ? 'active' : '' %>"
+        href="/create"
+        data-admin-hidden="true"
+      >
+        Create
+      </a>
+      <a
+        class="<%= activePage === 'about' ? 'active' : '' %>"
+        href="/aboutus"
+        data-admin-hidden="true"
+      >
+        About
+      </a>
     </nav>
 
-    <form class="search-bar" action="/trackdelivery" method="GET" aria-label="Search tracking">
-      <input
-        type="text"
-        name="trackingId"
-        placeholder="Enter tracking ID"
-        autocomplete="off"
-        required
-      />
-      <button type="submit" class="btn btn-primary btn-chip">Go</button>
-    </form>
+    <a class="btn btn-primary btn-chip admin-dashboard-link" href="/create" data-admin-only="true">
+      Dashboard
+    </a>
+
   </div>
 </header>
