@@ -2,16 +2,89 @@ const accountEl = document.getElementById("accountAddress");
 const connectBtn = document.getElementById("connectButton");
 const statusEl = document.getElementById("statusMessage");
 const deliveryForm = document.getElementById("deliveryForm");
+const trackForm = document.getElementById("trackForm");
 const trackingResultEl = document.getElementById("trackingResult");
 
+const TRACKING_STORAGE_KEY = "zacTrackingMap";
+
+function loadTrackingMap() {
+  if (!window.localStorage) return {};
+  try {
+    const raw = window.localStorage.getItem(TRACKING_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveTrackingMap(map) {
+  if (!window.localStorage) return;
+  window.localStorage.setItem(TRACKING_STORAGE_KEY, JSON.stringify(map));
+}
+
+function getRandomInt(min, max) {
+  const range = max - min + 1;
+  if (window.crypto && window.crypto.getRandomValues) {
+    const buffer = new Uint32Array(1);
+    window.crypto.getRandomValues(buffer);
+    return min + (buffer[0] % range);
+  }
+  return min + Math.floor(Math.random() * range);
+}
+
+function generateRandomDigits(length) {
+  let result = "";
+  for (let i = 0; i < length; i += 1) {
+    result += getRandomInt(0, 9);
+  }
+  return result;
+}
+
+function generateTrackingId(existingMap) {
+  const length = getRandomInt(7, 10);
+  const digits = generateRandomDigits(length);
+  const trackingId = `ZAC${digits}`;
+  if (existingMap && existingMap[trackingId]) {
+    return generateTrackingId(existingMap);
+  }
+  return trackingId;
+}
+
+function normalizeTrackingId(trackingId) {
+  return String(trackingId || "").trim().toUpperCase();
+}
+
+function isValidTrackingFormat(trackingId) {
+  return /^ZAC\d{3,10}$/.test(normalizeTrackingId(trackingId));
+}
+
+function findTrackingIdByOrderId(orderId) {
+  const map = loadTrackingMap();
+  const numericOrderId = Number(orderId);
+  return Object.keys(map).find(
+    (key) => Number(map[key]?.orderId) === numericOrderId
+  );
+}
+
 function orderIdToTrackingId(orderId) {
+  const mappedTrackingId = findTrackingIdByOrderId(orderId);
+  if (mappedTrackingId) {
+    return mappedTrackingId;
+  }
   const n = Number(orderId);
   if (!Number.isFinite(n) || n <= 0) return "ZAC???";
   return "ZAC" + String(n).padStart(3, "0");
 }
 
 function trackingIdToOrderId(trackingId) {
-  const t = String(trackingId || "").trim().toUpperCase();
+  const t = normalizeTrackingId(trackingId);
+  if (!isValidTrackingFormat(t)) return null;
+
+  const map = loadTrackingMap();
+  if (map[t] && Number.isFinite(Number(map[t].orderId))) {
+    return Number(map[t].orderId);
+  }
+
   const match = t.match(/^ZAC(\d{1,})$/);
   if (!match) return null;
   const n = Number(match[1]);
@@ -22,6 +95,13 @@ const state = {
   escrowContract: null,
   shippingContract: null,
   account: null,
+};
+
+const mapState = {
+  map: null,
+  markers: [],
+  line: null,
+  geocodeCache: new Map(),
 };
 
 function setStatus(message, type = "info") {
@@ -141,6 +221,7 @@ function renderTrackingResult(shipment) {
   const detailStatus = document.getElementById("detailStatus");
   const detailIcon = document.getElementById("detailIcon");
   const routeSummaryEl = document.getElementById("routeSummary");
+  const routeSummaryMapEl = document.getElementById("routeSummaryMap");
   const primaryItemTitle = document.getElementById("primaryItemTitle");
   const primaryItemId = document.getElementById("primaryItemId");
   const primaryItemRoute = document.getElementById("primaryItemRoute");
@@ -165,6 +246,9 @@ function renderTrackingResult(shipment) {
   }
   if (routeSummaryEl) {
     routeSummaryEl.textContent = routeSummary;
+  }
+  if (routeSummaryMapEl) {
+    routeSummaryMapEl.textContent = routeSummary;
   }
 
   if (primaryItemTitle) {
@@ -199,6 +283,11 @@ function renderTrackingResult(shipment) {
       <p><strong>Status:</strong> ${statusLabel}</p>
     </div>
   `;
+
+  updateMapForShipment({
+    pickupLocation: shipment.pickupLocation,
+    dropoffLocation: shipment.dropoffLocation,
+  });
 }
 
 function extractRpcMessage(error) {
@@ -224,13 +313,19 @@ async function loadTrackingFromPage() {
   if (!window.TRACKING_ID) return;
   if (!state.shippingContract) return;
 
-  const orderId = trackingIdToOrderId(window.TRACKING_ID);
-  if (!orderId) {
+  const trackingId = normalizeTrackingId(window.TRACKING_ID);
+  if (!isValidTrackingFormat(trackingId)) {
     setStatus("Invalid tracking ID format. Use ZAC001, ZAC002, etc.", "danger");
     return;
   }
 
-  setStatus(`Fetching ${window.TRACKING_ID} from blockchain...`, "info");
+  const orderId = trackingIdToOrderId(trackingId);
+  if (!orderId) {
+    setStatus("No order found for this tracking ID.", "danger");
+    return;
+  }
+
+  setStatus(`Fetching ${trackingId} from blockchain...`, "info");
 
   const shipment = await state.shippingContract.methods.getShipment(orderId).call();
 
@@ -290,16 +385,188 @@ async function submitDeliveryRequest(event) {
     receipt?.events?.OrderCreated?.returnValues?.orderId ||
     (await state.escrowContract.methods.orderCount().call());
 
+  const trackingMap = loadTrackingMap();
+  const trackingId = generateTrackingId(trackingMap);
+  trackingMap[trackingId] = {
+    orderId: Number(orderId),
+    pickupLocation,
+    dropoffLocation,
+    senderName,
+    senderPhone,
+    receiverName,
+    createdAt: Date.now(),
+  };
+  saveTrackingMap(trackingMap);
+
   deliveryForm.reset();
   setStatus(
-    `Delivery created! Tracking ID: ${orderIdToTrackingId(orderId)}`,
+    `Delivery created! Tracking ID: ${trackingId}`,
     "success"
   );
 }
 
+async function trackParcel(event) {
+  if (!trackForm) {
+    return;
+  }
+  event.preventDefault();
+
+  const formData = new FormData(trackForm);
+  const trackingIdInput = formData.get("trackingId") || formData.get("orderId");
+  const normalizedTrackingId = normalizeTrackingId(trackingIdInput);
+
+  if (!isValidTrackingFormat(normalizedTrackingId)) {
+    setStatus("Invalid tracking ID format. Use ZAC001, ZAC002, etc.", "warning");
+    return;
+  }
+
+  const trackingMap = loadTrackingMap();
+  const entry = trackingMap[normalizedTrackingId];
+  if (!entry || !Number.isFinite(Number(entry.orderId))) {
+    setStatus("No order found for this tracking ID.", "warning");
+    return;
+  }
+
+  const canonicalTrackingId = normalizedTrackingId;
+
+  if (trackForm.dataset.redirect === "true") {
+    window.location.href = `/trackdelivery/${encodeURIComponent(canonicalTrackingId)}`;
+    return;
+  }
+
+  const orderId = Number(entry.orderId);
+  await ensureContracts({ requestAccounts: false });
+  setStatus("Fetching delivery details...", "info");
+  const shipment = await state.shippingContract.methods.getShipment(orderId).call();
+
+  renderTrackingResult({
+    orderId: shipment[0],
+    sender: shipment[1],
+    pickupLocation: shipment[2],
+    dropoffLocation: shipment[3],
+    senderName: shipment[4],
+    senderPhone: shipment[5],
+    receiverName: shipment[6],
+    status: getStatusLabel(shipment[7]),
+  });
+
+  clearStatus();
+}
+
+function initMap() {
+  const mapEl = document.getElementById("trackingMap");
+  if (!mapEl || !window.L) {
+    return null;
+  }
+
+  if (mapState.map) {
+    return mapState.map;
+  }
+
+  mapState.map = L.map(mapEl, {
+    zoomControl: true,
+    scrollWheelZoom: false,
+  });
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+    maxZoom: 18,
+  }).addTo(mapState.map);
+
+  mapState.map.setView([39.5, -98.35], 4);
+  return mapState.map;
+}
+
+function clearMapLayers() {
+  if (mapState.line) {
+    mapState.line.remove();
+    mapState.line = null;
+  }
+
+  mapState.markers.forEach((marker) => marker.remove());
+  mapState.markers = [];
+}
+
+async function geocodeLocation(location) {
+  if (!location) return null;
+  const key = String(location).trim().toLowerCase();
+  if (!key) return null;
+
+  if (mapState.geocodeCache.has(key)) {
+    return mapState.geocodeCache.get(key);
+  }
+
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+    location
+  )}`;
+
+  try {
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data || !data[0]) return null;
+    const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    mapState.geocodeCache.set(key, coords);
+    return coords;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function updateMapForShipment({ pickupLocation, dropoffLocation }) {
+  const map = initMap();
+  if (!map) return;
+
+  const pickup = pickupLocation || "";
+  const dropoff = dropoffLocation || "";
+  if (!pickup && !dropoff) return;
+
+  const [pickupCoords, dropoffCoords] = await Promise.all([
+    geocodeLocation(pickup),
+    geocodeLocation(dropoff),
+  ]);
+
+  clearMapLayers();
+
+  const points = [];
+  if (pickupCoords) {
+    points.push(pickupCoords);
+    mapState.markers.push(
+      L.marker(pickupCoords).addTo(map).bindPopup("Pickup")
+    );
+  }
+
+  if (dropoffCoords) {
+    points.push(dropoffCoords);
+    mapState.markers.push(L.marker(dropoffCoords).addTo(map).bindPopup("Drop off"));
+  }
+
+  if (points.length >= 2) {
+    mapState.line = L.polyline(points, { color: "#2f6bff", weight: 4 }).addTo(map);
+    map.fitBounds(L.latLngBounds(points), { padding: [24, 24], maxZoom: 10 });
+    return;
+  }
+
+  if (points.length === 1) {
+    map.setView(points[0], 10);
+  }
+}
+
 async function init() {
+  if (trackForm) {
+    trackForm.addEventListener("submit", (event) => {
+      trackParcel(event).catch((error) => {
+        setStatus(extractRpcMessage(error), "danger");
+      });
+    });
+  }
+
+  const requiresWeb3 = Boolean(connectBtn || deliveryForm || trackingResultEl);
+
   if (!window.ethereum) {
-    setStatus("MetaMask not detected. Install it to continue.", "danger");
+    if (requiresWeb3) {
+      setStatus("MetaMask not detected. Install it to continue.", "danger");
+    }
     return;
   }
 

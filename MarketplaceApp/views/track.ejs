@@ -164,6 +164,19 @@
         font-family: inherit;
       }
 
+      .alert {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        background: rgba(47, 107, 255, 0.08);
+        color: #234fbd;
+      }
+
+      .alert.d-none {
+        display: none;
+      }
+
       .site-footer {
         border-top: 1px solid var(--border);
         background: white;
@@ -200,7 +213,13 @@
               <p>Search by tracking ID.</p>
             </div>
 
-            <form class="search-field" action="/trackdelivery" method="GET">
+            <form
+              class="search-field"
+              id="trackForm"
+              action="/trackdelivery"
+              method="GET"
+              data-redirect="true"
+            >
               <input
                 type="text"
                 name="trackingId"
@@ -209,11 +228,15 @@
               />
               <button class="btn btn-primary btn-chip" type="submit">Search</button>
             </form>
+
+            <div class="alert d-none" id="statusMessage"></div>
           </section>
         </div>
       </main>
 
       <%- include("partials/footer") %>
     </div>
+
+    <script src="/js/marketplace-client.js"></script>
   </body>
 </html>

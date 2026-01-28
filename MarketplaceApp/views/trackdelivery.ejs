@@ -11,6 +11,12 @@
     href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet"
   />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
 
   <style>
     :root {
@@ -162,6 +168,33 @@
       font-size: 12px;
     }
 
+    .map-panel {
+      margin-top: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #trackingMap {
+      width: 100%;
+      height: 260px;
+      border-radius: 16px;
+    }
+
+    .map-overlay {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      box-shadow: var(--shadow);
+    }
+
+    .map-overlay strong { color: var(--text); }
+
     .site-footer {
       border-top: 1px solid var(--border);
       background: white;
@@ -223,12 +256,25 @@
             <p id="routeSummary"></p>
           </div>
         </section>
+
+        <section class="panel map-panel">
+          <div id="trackingMap" aria-label="Delivery route map"></div>
+          <div class="map-overlay">
+            <strong>Live delivery route</strong>
+            <p id="routeSummaryMap" style="margin:6px 0 0;"></p>
+          </div>
+        </section>
       </div>
     </main>
 
     <%- include("partials/footer") %>
   </div>
 
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
   <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
   <script>
     window.TRACKING_ID = "<%= trackingId %>";
