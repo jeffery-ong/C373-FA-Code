@@ -2,10 +2,7 @@ const accountEl = document.getElementById("accountAddress");
 const connectBtn = document.getElementById("connectButton");
 const statusEl = document.getElementById("statusMessage");
 const deliveryForm = document.getElementById("deliveryForm");
-const trackForm = document.getElementById("trackForm");
 const trackingResultEl = document.getElementById("trackingResult");
-const adminActionsEl = document.getElementById("adminActions");
-const adminStatusForm = document.getElementById("adminStatusForm");
 
 function orderIdToTrackingId(orderId) {
   const n = Number(orderId);
@@ -28,12 +25,18 @@ const state = {
 };
 
 function setStatus(message, type = "info") {
+  if (!statusEl) {
+    return;
+  }
   statusEl.textContent = message;
   statusEl.className = `alert alert-${type}`;
   statusEl.classList.remove("d-none");
 }
 
 function clearStatus() {
+  if (!statusEl) {
+    return;
+  }
   statusEl.classList.add("d-none");
 }
 
@@ -104,24 +107,6 @@ async function ensureContracts({ requestAccounts = false } = {}) {
 
   if (!state.escrowContract || !state.shippingContract) {
     await loadContracts();
-  }
-}
-
-async function updateAdminAccess() {
-  if (!adminActionsEl) {
-    return;
-  }
-
-  if (!state.shippingContract || !state.account) {
-    adminActionsEl.classList.remove("show");
-    return;
-  }
-
-  try {
-    const isAdmin = await state.shippingContract.methods.admins(state.account).call();
-    adminActionsEl.classList.toggle("show", Boolean(isAdmin));
-  } catch (error) {
-    adminActionsEl.classList.remove("show");
   }
 }
 
@@ -265,7 +250,6 @@ async function loadTrackingFromPage() {
 
 async function connectWallet() {
   await ensureContracts({ requestAccounts: true });
-  await updateAdminAccess();
   await loadTrackingFromPage();
 }
 
@@ -313,41 +297,6 @@ async function submitDeliveryRequest(event) {
   );
 }
 
-async function trackParcel(event) {
-  if (!trackForm) {
-    return;
-  }
-  event.preventDefault();
-  await ensureContracts({ requestAccounts: false });
-
-  const formData = new FormData(trackForm);
-
-  // ✅ support searching by ZAC###
-  const trackingIdInput = formData.get("trackingId") || formData.get("orderId");
-  const orderId = trackingIdToOrderId(trackingIdInput);
-
-  if (!orderId) {
-    setStatus("Invalid tracking ID. Use format like ZAC001.", "warning");
-    return;
-  }
-
-  setStatus("Fetching delivery details...", "info");
-  const shipment = await state.shippingContract.methods.getShipment(orderId).call();
-
-  renderTrackingResult({
-    orderId: shipment[0],
-    sender: shipment[1],
-    pickupLocation: shipment[2],
-    dropoffLocation: shipment[3],
-    senderName: shipment[4],
-    senderPhone: shipment[5],
-    receiverName: shipment[6],
-    status: getStatusLabel(shipment[7]),
-  });
-
-  clearStatus();
-}
-
 async function init() {
   if (!window.ethereum) {
     setStatus("MetaMask not detected. Install it to continue.", "danger");
@@ -370,58 +319,8 @@ async function init() {
     });
   }
 
-  if (trackForm) {
-    trackForm.addEventListener("submit", (event) => {
-      trackParcel(event).catch((error) => {
-        setStatus(extractRpcMessage(error), "danger");
-      });
-    });
-  }
-
-  if (adminStatusForm) {
-    adminStatusForm.addEventListener("click", (event) => {
-      const button = event.target.closest("button[data-admin]");
-      if (!button) {
-        return;
-      }
-
-      const action = button.dataset.admin;
-      const formData = new FormData(adminStatusForm);
-      const orderId = formData.get("orderId");
-
-      if (!orderId) {
-        setStatus("Enter an order ID first.", "warning");
-        return;
-      }
-
-      if (!state.shippingContract || !state.account) {
-        setStatus("Connect your wallet first.", "warning");
-        return;
-      }
-
-      if (action === "collect") {
-        setStatus("Updating status to collected...", "info");
-        state.shippingContract.methods
-          .markCollected(orderId)
-          .send({ from: state.account, gas: 200000 })
-          .then(() => setStatus("Marked as collected.", "success"))
-          .catch((error) => setStatus(extractRpcMessage(error), "danger"));
-      }
-
-      if (action === "deliver") {
-        setStatus("Updating status to delivered...", "info");
-        state.shippingContract.methods
-          .markDelivered(orderId)
-          .send({ from: state.account, gas: 200000 })
-          .then(() => setStatus("Marked as delivered.", "success"))
-          .catch((error) => setStatus(extractRpcMessage(error), "danger"));
-      }
-    });
-  }
-
   try {
     await ensureContracts({ requestAccounts: false });
-    await updateAdminAccess();
     await loadTrackingFromPage();
   } catch (error) {
     setStatus(error.message, "danger");
