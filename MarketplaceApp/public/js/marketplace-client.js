@@ -9,6 +9,7 @@ const adminOrdersEl = document.getElementById("adminOrders");
 const adminRefreshBtn = document.getElementById("adminRefresh");
 const userPanelEl = document.getElementById("userPanel");
 const myDeliveriesEl = document.getElementById("myDeliveries");
+const deliveryPricingEl = document.getElementById("deliveryPricing");
 
 const ADMIN_ACCOUNTS = new Set([
   "0xe2d15dd1228d095a7327bbf947fe80c03d87d9e8",
@@ -70,6 +71,11 @@ function clearStatus() {
   statusEl.classList.add("d-none");
 }
 
+function setDeliveryPricing(message) {
+  if (!deliveryPricingEl) return;
+  deliveryPricingEl.textContent = message;
+}
+
 function formatAccount(address) {
   if (!address) {
     return "Not connected";
@@ -114,12 +120,25 @@ async function loadContracts() {
   const shippingNetwork = shippingArtifact.networks[networkId];
 
   if (!escrowNetwork || !escrowNetwork.address) {
-    throw new Error("PaymentEscrow not deployed on the connected network.");
+    throw new Error(
+      `PaymentEscrow not deployed on network ${networkId}.`
+    );
   }
 
   if (!shippingNetwork || !shippingNetwork.address) {
-    throw new Error("ShippingTracking not deployed on the connected network.");
+    throw new Error(
+      `ShippingTracking not deployed on network ${networkId}.`
+    );
   }
+
+  await assertDeployedContract(
+    escrowNetwork.address,
+    "PaymentEscrow"
+  );
+  await assertDeployedContract(
+    shippingNetwork.address,
+    "ShippingTracking"
+  );
 
   state.escrowContract = new state.web3.eth.Contract(
     escrowArtifact.abi,
@@ -130,6 +149,15 @@ async function loadContracts() {
     shippingArtifact.abi,
     shippingNetwork.address
   );
+}
+
+async function assertDeployedContract(address, name) {
+  const code = await state.web3.eth.getCode(address);
+  if (!code || code === "0x") {
+    throw new Error(
+      `${name} not found at ${address}. Re-deploy contracts and refresh.`
+    );
+  }
 }
 
 async function loadWeb3({ requestAccounts = true } = {}) {
@@ -619,6 +647,11 @@ async function submitDeliveryRequest(event) {
   const receiverName = formData.get("receiverName");
   const amount = formData.get("amount");
 
+  if (!amount || Number(amount) <= 0) {
+    setStatus("Enter pickup and drop off to calculate payment.", "warning");
+    return;
+  }
+
   setStatus("Submitting delivery request...", "info");
   const receipt = await state.escrowContract.methods
     .createDeliveryOrder(
@@ -757,6 +790,53 @@ async function geocodeLocation(location) {
   }
 }
 
+function haversineDistanceKm([lat1, lon1], [lat2, lon2]) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const r = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(a));
+}
+
+let pricingTimer = null;
+async function updateDeliveryPricing() {
+  if (!deliveryForm) return;
+  const pickupInput = deliveryForm.querySelector("input[name='pickupLocation']");
+  const dropoffInput = deliveryForm.querySelector("input[name='dropoffLocation']");
+  const amountInput = deliveryForm.querySelector("input[name='amount']");
+  if (!pickupInput || !dropoffInput || !amountInput) return;
+
+  const pickup = pickupInput.value.trim();
+  const dropoff = dropoffInput.value.trim();
+  if (!pickup || !dropoff) {
+    amountInput.value = "";
+    setDeliveryPricing("Enter pickup and drop off to calculate.");
+    return;
+  }
+
+  setDeliveryPricing("Calculating distance...");
+  const [pickupCoords, dropoffCoords] = await Promise.all([
+    geocodeLocation(pickup),
+    geocodeLocation(dropoff),
+  ]);
+
+  if (!pickupCoords || !dropoffCoords) {
+    amountInput.value = "";
+    setDeliveryPricing("Unable to calculate distance. Check locations.");
+    return;
+  }
+
+  const distanceKm = haversineDistanceKm(pickupCoords, dropoffCoords);
+  const price = Math.max(0, distanceKm);
+  amountInput.value = price.toFixed(2);
+  setDeliveryPricing(
+    `Distance: ${distanceKm.toFixed(2)} km | Payment: $${price.toFixed(2)}`
+  );
+}
+
 async function updateMapForShipment({ pickupLocation, dropoffLocation }) {
   const map = initMap();
   if (!map) return;
@@ -823,7 +903,7 @@ async function init() {
   if (connectBtn) {
     connectBtn.addEventListener("click", () => {
       connectWallet().catch((error) => {
-        setStatus(error.message, "danger");
+        setStatus(extractRpcMessage(error), "danger");
       });
     });
   }
@@ -834,6 +914,22 @@ async function init() {
         setStatus(extractRpcMessage(error), "danger");
       });
     });
+
+    const pickupInput = deliveryForm.querySelector("input[name='pickupLocation']");
+    const dropoffInput = deliveryForm.querySelector("input[name='dropoffLocation']");
+    const schedulePricingUpdate = () => {
+      if (pricingTimer) {
+        clearTimeout(pricingTimer);
+      }
+      pricingTimer = setTimeout(() => {
+        updateDeliveryPricing().catch(() => {
+          setDeliveryPricing("Unable to calculate distance.");
+        });
+      }, 500);
+    };
+
+    if (pickupInput) pickupInput.addEventListener("input", schedulePricingUpdate);
+    if (dropoffInput) dropoffInput.addEventListener("input", schedulePricingUpdate);
   }
 
   if (adminOrdersEl) {
