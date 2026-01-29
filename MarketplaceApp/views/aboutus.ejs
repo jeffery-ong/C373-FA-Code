@@ -58,6 +58,7 @@
       justify-content: space-between;
       gap: 18px;
       flex-wrap: wrap;
+      min-height: 60px;
     }
 
     .brand a {
@@ -84,6 +85,7 @@
       font-weight: 600;
       color: var(--text-muted);
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .nav-links a.active { color: var(--primary); }
@@ -135,12 +137,24 @@
 
     .btn-chip { padding: 6px 12px; font-size: 12px; }
 
+    .admin-nav-link {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .admin-nav-link.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
     .nav-account {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       color: var(--text-muted);
       font-size: 14px;
+      white-space: nowrap;
     }
 
     .account-label {

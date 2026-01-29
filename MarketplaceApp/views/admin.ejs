@@ -62,6 +62,7 @@
         justify-content: space-between;
         gap: 16px;
         flex-wrap: wrap;
+        min-height: 60px;
       }
 
       .brand a {
@@ -74,10 +75,22 @@
         gap: 16px;
         font-weight: 600;
         color: var(--text-muted);
+        align-items: center;
       }
 
       .nav-links a.active {
         color: var(--primary);
+      }
+
+      .admin-nav-link {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .admin-nav-link.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
       }
 
       .btn {
@@ -94,40 +107,145 @@
         color: white;
       }
 
-      main {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 48px 24px;
+      .btn-ghost {
+        background: white;
+        border: 1px solid var(--border);
+        color: var(--text);
       }
 
-      .hero {
-        max-width: 720px;
+      .btn-chip {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .nav-account {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .account-label {
+        color: var(--text-muted);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      main {
+        flex: 1;
+        padding: 36px 24px 64px;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .panel {
         background: var(--surface);
         border-radius: 20px;
         border: 1px solid var(--border);
         box-shadow: var(--shadow);
-        padding: 32px;
-        text-align: center;
+        padding: 24px;
       }
 
-      .hero h1 {
-        margin: 0 0 12px;
+      .page-title h1 {
+        margin: 0 0 8px;
         font-family: "Space Grotesk", system-ui, sans-serif;
-        font-size: clamp(32px, 4vw, 44px);
+        font-size: clamp(26px, 4vw, 36px);
       }
 
-      .hero p {
-        margin: 0 0 24px;
+      .page-title p {
+        margin: 0 0 18px;
         color: var(--text-muted);
       }
 
-      .hero-actions {
+      .admin-header {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
         gap: 12px;
-        justify-content: center;
         flex-wrap: wrap;
+      }
+
+      .admin-list {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .admin-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        background: white;
+        display: grid;
+        gap: 10px;
+      }
+
+      .admin-card-link {
+        display: grid;
+        gap: 10px;
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .admin-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .admin-title {
+        font-weight: 600;
+      }
+
+      .admin-meta {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .admin-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .admin-empty {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px dashed var(--border);
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(47, 107, 255, 0.12);
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .alert {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        background: rgba(47, 107, 255, 0.08);
+        color: #234fbd;
+      }
+
+      .alert.d-none {
+        display: none;
       }
 
       .site-footer {
@@ -159,13 +277,21 @@
       <%- include("partials/header", { activePage: "admin" }) %>
 
       <main>
-        <section class="hero">
-          <h1>Admin access detected</h1>
-          <p>Review deliveries, update shipment statuses, and track parcels.</p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="/track">Go to Dashboard</a>
-          </div>
-        </section>
+        <div class="container">
+          <section class="panel" id="adminPanel">
+            <div class="admin-header">
+              <div class="page-title">
+                <h1>Admin Dashboard</h1>
+                <p>Manage delivery requests and update statuses.</p>
+              </div>
+              <button class="btn btn-ghost btn-chip" type="button" id="adminRefresh">
+                Refresh
+              </button>
+            </div>
+            <div class="alert d-none" id="statusMessage"></div>
+            <div class="admin-list" id="adminOrders"></div>
+          </section>
+        </div>
       </main>
 
       <%- include("partials/footer") %>

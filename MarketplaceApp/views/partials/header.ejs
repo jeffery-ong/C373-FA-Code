@@ -36,8 +36,8 @@
     </nav>
 
     <a
-      class="btn btn-primary btn-chip admin-dashboard-link"
-      href="/track"
+      class="btn <%= activePage === 'admin' ? 'btn-primary' : 'btn-ghost' %> btn-chip admin-nav-link <%= activePage === 'admin' ? 'active' : '' %>"
+      href="/admin"
       data-admin-only="true"
       style="display: none;"
     >
@@ -45,7 +45,7 @@
     </a>
 
     <a
-      class="btn btn-ghost btn-chip"
+      class="btn <%= activePage === 'completed' ? 'btn-primary' : 'btn-ghost' %> btn-chip admin-nav-link <%= activePage === 'completed' ? 'active' : '' %>"
       href="/completed-deliveries"
       data-admin-only="true"
       style="display: none;"

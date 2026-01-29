@@ -347,7 +347,7 @@ function setAdminView(isAdmin) {
 function isAdminPath(pathname) {
   if (!pathname) return false;
   if (pathname === "/admin") return true;
-  if (pathname === "/track") return true;
+  if (pathname === "/completed-deliveries") return true;
   if (pathname.startsWith("/trackdelivery")) return true;
   return false;
 }
