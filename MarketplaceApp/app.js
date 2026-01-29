@@ -30,6 +30,10 @@ app.get("/my-deliveries", (req, res) => {
   res.render("my-deliveries");
 });
 
+app.get("/completed-deliveries", (req, res) => {
+  res.render("completed-deliveries");
+});
+
 // ---------------- ABOUT US PAGE ----------------
 app.get("/aboutus", (req, res) => {
   res.render("aboutus");

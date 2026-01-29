@@ -9,6 +9,7 @@ const adminOrdersEl = document.getElementById("adminOrders");
 const adminRefreshBtn = document.getElementById("adminRefresh");
 const userPanelEl = document.getElementById("userPanel");
 const myDeliveriesEl = document.getElementById("myDeliveries");
+const completedOrdersEl = document.getElementById("completedOrders");
 const deliveryPricingEl = document.getElementById("deliveryPricing");
 
 const ADMIN_ACCOUNTS = new Set([
@@ -378,6 +379,7 @@ function renderAdminOrders(orders) {
   }
 
   adminOrdersEl.innerHTML = orders
+    .filter((order) => order.status !== "Delivered / Collected")
     .map((order) => {
       const trackingId = orderIdToTrackingId(order.orderId);
       return `
@@ -456,6 +458,52 @@ async function loadAdminOrders() {
   }
 
   renderAdminOrders(orders);
+  renderCompletedOrders(orders);
+}
+
+async function loadCompletedOrders() {
+  if (!completedOrdersEl) {
+    return;
+  }
+
+  completedOrdersEl.innerHTML = '<div class="admin-empty">Loading...</div>';
+
+  const isAdmin = await checkAdminAccess();
+  if (!isAdmin) {
+    completedOrdersEl.innerHTML =
+      '<div class="admin-empty">Admin access required.</div>';
+    return;
+  }
+
+  const orderCount = Number(
+    await state.escrowContract.methods.orderCount().call()
+  );
+
+  if (!Number.isFinite(orderCount) || orderCount <= 0) {
+    renderCompletedOrders([]);
+    return;
+  }
+
+  const orders = [];
+  for (let i = 1; i <= orderCount; i += 1) {
+    try {
+      const shipment = await state.shippingContract.methods.getShipment(i).call();
+      orders.push({
+        orderId: Number(shipment[0]),
+        sender: shipment[1],
+        pickupLocation: shipment[2],
+        dropoffLocation: shipment[3],
+        senderName: shipment[4],
+        senderPhone: shipment[5],
+        receiverName: shipment[6],
+        status: getStatusLabel(shipment[7]),
+      });
+    } catch (error) {
+      continue;
+    }
+  }
+
+  renderCompletedOrders(orders);
 }
 
 function renderMyDeliveries(orders) {
@@ -492,6 +540,43 @@ function renderMyDeliveries(orders) {
               View Details
             </a>
           </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderCompletedOrders(orders) {
+  if (!completedOrdersEl) {
+    return;
+  }
+
+  const completed = orders.filter((order) => order.status === "Delivered / Collected");
+  if (!completed.length) {
+    completedOrdersEl.innerHTML =
+      '<div class="admin-empty">No completed deliveries yet.</div>';
+    return;
+  }
+
+  completedOrdersEl.innerHTML = completed
+    .map((order) => {
+      const trackingId = orderIdToTrackingId(order.orderId);
+      return `
+        <article class="admin-card">
+          <a class="admin-card-link" href="/trackdelivery/${trackingId}">
+            <div class="admin-row">
+              <div>
+                <div class="admin-title">Order ${trackingId}</div>
+                <div class="admin-meta">Order ID: ${order.orderId}</div>
+              </div>
+              <span class="status-pill">${order.status}</span>
+            </div>
+            <div class="admin-meta">Pickup: ${order.pickupLocation}</div>
+            <div class="admin-meta">Drop Off: ${order.dropoffLocation}</div>
+            <div class="admin-meta">Sender: ${order.senderName} (${order.senderPhone})</div>
+            <div class="admin-meta">Receiver: ${order.receiverName}</div>
+            <div class="admin-meta">Sender Wallet: ${order.sender}</div>
+          </a>
         </article>
       `;
     })
@@ -570,6 +655,7 @@ async function handleAdminAction(orderId, action) {
 
     setStatus("Status updated.", "success");
     await loadAdminOrders();
+    await loadCompletedOrders();
   } catch (error) {
     setStatus(extractRpcMessage(error), "danger");
   }
@@ -981,6 +1067,7 @@ async function init() {
     await updateAdminPanel();
     await loadTrackingFromPage();
     await loadMyDeliveries();
+    await loadCompletedOrders();
   } catch (error) {
     // Only show errors when admin actually connects.
   }

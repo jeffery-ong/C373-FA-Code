@@ -44,7 +44,16 @@
       Dashboard
     </a>
 
-    <div class="nav-account" data-admin-hidden="true">
+    <a
+      class="btn btn-ghost btn-chip"
+      href="/completed-deliveries"
+      data-admin-only="true"
+      style="display: none;"
+    >
+      Completed
+    </a>
+
+    <div class="nav-account">
       <span class="account-label">Account:</span>
       <strong id="accountAddress">Not connected</strong>
       <button class="btn btn-primary btn-chip" id="connectButton" type="button">

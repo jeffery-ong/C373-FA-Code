@@ -98,6 +98,8 @@ contract ShippingTracking {
 
         shipment.status = DeliveryStatus.Delivered;
         emit StatusUpdated(orderId, shipment.status);
+
+        IPaymentEscrow(escrow).releasePayment(orderId);
     }
 
     function getShipment(uint orderId)
@@ -127,4 +129,8 @@ contract ShippingTracking {
             shipment.status
         );
     }
+}
+
+interface IPaymentEscrow {
+    function releasePayment(uint orderId) external;
 }

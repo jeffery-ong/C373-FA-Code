@@ -21,6 +21,7 @@ contract PaymentEscrow {
         address buyer;
         uint amount;
         bool paid;
+        bool released;
     }
 
     mapping(uint => Order) public orders;
@@ -31,6 +32,7 @@ contract PaymentEscrow {
     // ---------------- EVENTS ----------------
     event OrderCreated(uint orderId, address buyer, uint amount);
     event ShippingContractUpdated(address shippingContract);
+    event PaymentReleased(uint orderId, address recipient, uint amount);
 
     constructor() {
         owner = msg.sender;
@@ -38,6 +40,11 @@ contract PaymentEscrow {
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner");
+        _;
+    }
+
+    modifier onlyShippingContract() {
+        require(msg.sender == shippingContract, "Only shipping contract");
         _;
     }
 
@@ -60,12 +67,13 @@ contract PaymentEscrow {
 
         orderCount++;
 
-        orders[orderCount] = Order(
-            orderCount,
-            msg.sender,
-            msg.value,
-            true
-        );
+        orders[orderCount] = Order({
+            orderId: orderCount,
+            buyer: msg.sender,
+            amount: msg.value,
+            paid: true,
+            released: false
+        });
 
         IShippingTracking(shippingContract).createShipment(
             orderCount,
@@ -77,9 +85,20 @@ contract PaymentEscrow {
             receiverName
         );
 
-        payable(owner).transfer(msg.value);
-
         emit OrderCreated(orderCount, msg.sender, msg.value);
+    }
+
+    // ---------------- RELEASE PAYMENT ----------------
+    function releasePayment(uint orderId) external onlyShippingContract {
+        Order storage o = orders[orderId];
+        require(o.orderId != 0, "Order not found");
+        require(o.paid, "Order not paid");
+        require(!o.released, "Already released");
+
+        o.released = true;
+        payable(owner).transfer(o.amount);
+
+        emit PaymentReleased(orderId, owner, o.amount);
     }
 
     // ---------------- GETTER ----------------
