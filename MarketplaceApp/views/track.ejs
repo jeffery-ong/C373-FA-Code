@@ -168,23 +168,6 @@
         margin-right: 8px;
       }
 
-      .search-field {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        padding: 12px 14px;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        background: white;
-      }
-
-      .search-field input {
-        border: none;
-        outline: none;
-        font-size: 14px;
-        width: 100%;
-        font-family: inherit;
-      }
 
       .alert {
         margin-top: 16px;
@@ -313,22 +296,6 @@
               </div>
               <button class="btn btn-primary" id="connectButton">Connect Wallet</button>
             </div>
-
-            <form
-              class="search-field"
-              id="trackForm"
-              action="/trackdelivery"
-              method="GET"
-              data-redirect="true"
-            >
-              <input
-                type="text"
-                name="trackingId"
-                placeholder="Search tracking ID (e.g. ZAC002)"
-                required
-              />
-              <button class="btn btn-primary btn-chip" type="submit">Search</button>
-            </form>
 
             <div class="alert d-none" id="statusMessage"></div>
           </section>

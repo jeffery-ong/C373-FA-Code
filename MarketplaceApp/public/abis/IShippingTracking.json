@@ -54,7 +54,7 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\ninterface IShippingTracking {\r\n    function createShipment(\r\n        uint orderId,\r\n        address sender,\r\n        string calldata pickupLocation,\r\n        string calldata dropoffLocation,\r\n        string calldata senderName,\r\n        string calldata senderPhone,\r\n        string calldata receiverName\r\n    ) external;\r\n}\r\n\r\ncontract PaymentEscrow {\r\n    uint public orderCount = 0;\r\n\r\n    struct Order {\r\n        uint orderId;\r\n        address buyer;\r\n        uint amount;\r\n        bool paid;\r\n    }\r\n\r\n    mapping(uint => Order) public orders;\r\n\r\n    address public owner;\r\n    address public shippingContract;\r\n\r\n    // ---------------- EVENTS ----------------\r\n    event OrderCreated(uint orderId, address buyer, uint amount);\r\n    event ShippingContractUpdated(address shippingContract);\r\n\r\n    constructor() {\r\n        owner = msg.sender;\r\n    }\r\n\r\n    modifier onlyOwner() {\r\n        require(msg.sender == owner, \"Only owner\");\r\n        _;\r\n    }\r\n\r\n    function setShippingContract(address _shippingContract) external onlyOwner {\r\n        require(_shippingContract != address(0), \"Invalid shipping contract\");\r\n        shippingContract = _shippingContract;\r\n        emit ShippingContractUpdated(_shippingContract);\r\n    }\r\n\r\n    // ---------------- DELIVERY REQUEST ----------------\r\n    function createDeliveryOrder(\r\n        string calldata pickupLocation,\r\n        string calldata dropoffLocation,\r\n        string calldata senderName,\r\n        string calldata senderPhone,\r\n        string calldata receiverName\r\n    ) external payable {\r\n        require(msg.value > 0, \"Payment required\");\r\n        require(shippingContract != address(0), \"Shipping contract not set\");\r\n\r\n        orderCount++;\r\n\r\n        orders[orderCount] = Order(\r\n            orderCount,\r\n            msg.sender,\r\n            msg.value,\r\n            true\r\n        );\r\n\r\n        IShippingTracking(shippingContract).createShipment(\r\n            orderCount,\r\n            msg.sender,\r\n            pickupLocation,\r\n            dropoffLocation,\r\n            senderName,\r\n            senderPhone,\r\n            receiverName\r\n        );\r\n\r\n        payable(owner).transfer(msg.value);\r\n\r\n        emit OrderCreated(orderCount, msg.sender, msg.value);\r\n    }\r\n\r\n    // ---------------- GETTER ----------------\r\n    function getOrder(uint _orderId)\r\n        external\r\n        view\r\n        returns (\r\n            uint,\r\n            address,\r\n            uint,\r\n            bool\r\n        )\r\n    {\r\n        Order memory o = orders[_orderId];\r\n        return (\r\n            o.orderId,\r\n            o.buyer,\r\n            o.amount,\r\n            o.paid\r\n        );\r\n    }\r\n}\r\n",
-  "sourcePath": "C:\\C373-FA-Code\\contracts\\PaymentEscrow.sol",
+  "sourcePath": "C:\\Users\\shawn\\Downloads\\C373-FA-Code-main\\C373-FA-Code-main\\C373-FA-Code\\contracts\\PaymentEscrow.sol",
   "ast": {
     "absolutePath": "project:/contracts/PaymentEscrow.sol",
     "exportedSymbols": {
@@ -2875,7 +2875,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-01-28T09:25:32.588Z",
+  "updatedAt": "2026-01-29T05:55:44.111Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
