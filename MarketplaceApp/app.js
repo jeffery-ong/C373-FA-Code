@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/track", (req, res) => {
-  res.render("track");
+  res.redirect("/my-deliveries");
 });
 
 app.get("/create", (req, res) => {
