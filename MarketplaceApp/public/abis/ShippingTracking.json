@@ -5052,12 +5052,21 @@
         }
       },
       "links": {},
+<<<<<<< HEAD
       "address": "0xE730a4fd0fF8E331996Ea59a684e6c43A97726db",
       "transactionHash": "0xa8ee4bfa4735137625dd62663c2a9f8a3739a059e009b8235f6565ea4f255fff"
     }
   },
   "schemaVersion": "3.4.16",
   "updatedAt": "2026-01-29T06:15:32.037Z",
+=======
+      "address": "0x379334A022D0014EaD64A01260d5a2CE8547F94C",
+      "transactionHash": "0xbc35bf289f6d0bd83be4c234c2667db5780082656729ec3ddb5b1b9d95acb871"
+    }
+  },
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2026-01-29T07:00:21.235Z",
+>>>>>>> 0e68595df23d666b0741da971b204ee36baf9c65
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

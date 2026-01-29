@@ -2875,7 +2875,11 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
+<<<<<<< HEAD
   "updatedAt": "2026-01-29T06:15:20.866Z",
+=======
+  "updatedAt": "2026-01-29T07:00:12.392Z",
+>>>>>>> 0e68595df23d666b0741da971b204ee36baf9c65
   "devdoc": {
     "kind": "dev",
     "methods": {},
