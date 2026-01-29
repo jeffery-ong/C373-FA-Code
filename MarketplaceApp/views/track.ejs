@@ -117,6 +117,18 @@
         font-size: 12px;
       }
 
+      .nav-account {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      .account-label {
+        color: var(--text-muted);
+      }
+
       main {
         flex: 1;
         padding: 36px 24px 64px;
@@ -148,24 +160,6 @@
 
       .hidden {
         display: none;
-      }
-
-      .wallet-bar {
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: white;
-      }
-
-      .wallet-label {
-        color: var(--text-muted);
-        font-size: 14px;
-        margin-right: 8px;
       }
 
 
@@ -287,14 +281,6 @@
             <div class="page-title">
               <h1>Track Your Parcel</h1>
               <p>Search by tracking ID.</p>
-            </div>
-
-            <div class="wallet-bar">
-              <div>
-                <span class="wallet-label">Account:</span>
-                <strong id="accountAddress">Not connected</strong>
-              </div>
-              <button class="btn btn-primary" id="connectButton">Connect Wallet</button>
             </div>
 
             <div class="alert d-none" id="statusMessage"></div>
