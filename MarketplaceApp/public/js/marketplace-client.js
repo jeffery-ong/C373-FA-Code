@@ -343,6 +343,29 @@ function setAdminView(isAdmin) {
   });
 }
 
+function isAdminPath(pathname) {
+  if (!pathname) return false;
+  if (pathname === "/admin") return true;
+  if (pathname === "/track") return true;
+  if (pathname.startsWith("/trackdelivery")) return true;
+  return false;
+}
+
+function redirectByRole(isAdmin) {
+  if (!state.account) return;
+  const pathname = window.location.pathname || "/";
+  if (isAdmin && !isAdminPath(pathname)) {
+    window.location.replace("/admin");
+    return;
+  }
+  if (!isAdmin && pathname === "/admin") {
+    window.location.replace("/");
+  }
+  if (!isAdmin && pathname === "/track") {
+    window.location.replace("/");
+  }
+}
+
 function renderAdminOrders(orders) {
   if (!adminOrdersEl) {
     return;
@@ -558,6 +581,7 @@ async function updateAdminPanel() {
   if (isAdmin && adminPanelEl) {
     await loadAdminOrders();
   }
+  redirectByRole(isAdmin);
 }
 
 function extractRpcMessage(error) {

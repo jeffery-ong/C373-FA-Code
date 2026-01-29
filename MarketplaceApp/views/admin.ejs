@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ZacDelivery | Home</title>
+    <title>ZacDelivery | Admin</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -80,23 +80,6 @@
         color: var(--primary);
       }
 
-      .search-bar {
-        display: flex;
-        gap: 10px;
-        padding: 8px 12px;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: white;
-      }
-
-      .search-bar input {
-        border: none;
-        outline: none;
-        font-size: 14px;
-        width: 180px;
-        font-family: inherit;
-      }
-
       .btn {
         border: none;
         border-radius: 10px;
@@ -109,17 +92,6 @@
       .btn-primary {
         background: var(--primary);
         color: white;
-      }
-
-      .btn-ghost {
-        background: white;
-        border: 1px solid var(--border);
-        color: var(--text);
-      }
-
-      .btn-chip {
-        padding: 6px 12px;
-        font-size: 12px;
       }
 
       main {
@@ -184,15 +156,14 @@
 
   <body>
     <div class="page">
-      <%- include("partials/header", { activePage: "home" }) %>
+      <%- include("partials/header", { activePage: "admin" }) %>
 
       <main>
         <section class="hero">
-          <h1>Blockchain-secured deliveries</h1>
-          <p>Create a delivery or track an existing parcel.</p>
+          <h1>Admin access detected</h1>
+          <p>Review deliveries, update shipment statuses, and track parcels.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="/create">Create Delivery</a>
-            <a class="btn btn-ghost" href="/my-deliveries">Track Parcel</a>
+            <a class="btn btn-primary" href="/track">Go to Dashboard</a>
           </div>
         </section>
       </main>
